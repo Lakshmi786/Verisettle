@@ -23,5 +23,9 @@ node_modules/
 out/
 next-env.d.ts
 
+# Coding-assistant scratch files - not part of the project
+CLAUDE.md
+.claude/
+
 # OS
 .DS_Store

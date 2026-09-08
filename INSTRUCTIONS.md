@@ -1,6 +1,6 @@
-# Build Prompt for Claude Code — "VeriSettle": A Governed Multi-Agent Finance Operations Platform
+# Build Specification — "VeriSettle": A Governed Multi-Agent Finance Operations Platform
 
-Give this entire file to Claude Code as the first message in an empty
+Give this entire file to a coding agent as the first message in an empty
 repository. It is a complete, self-contained build specification — follow
 it top to bottom and the result is one specific system, not "a system like
 this." Where a decision is prescribed below (an exact library, an exact
