@@ -1,0 +1,66 @@
+[project]
+name = "custodian"
+version = "0.1.0"
+description = "Governed multi-agent finance operations platform"
+requires-python = "==3.12.*"
+dependencies = []
+
+# The root is a workspace coordinator, not an installable package. Each
+# member is likewise virtual - these are deployed services, not libraries,
+# so nothing is ever built into a wheel.
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "services/audit-log",
+    "services/backend",
+    "services/control-plane",
+    "services/data-loader",
+    "services/ledger",
+    "services/policy-service",
+    "services/sandbox-runner",
+]
+# services/sandbox-ocr is deliberately NOT a workspace member. It is the
+# image that parses untrusted invoice documents, built by its own
+# `docker build` and never part of the compose stack - keeping it out of
+# the shared resolution means nothing another service pulls in can widen
+# its dependency surface. It pins its own versions in its own pyproject.
+# infra/deepeval is excluded for a hard, tested reason, not tidiness:
+# deepeval 4.1.7 pins click<8.4.0 while huggingface-hub 1.20.1 (pulled in by
+# the data loader) requires click>=8.4.0 - the two genuinely cannot share one
+# resolution. Both are one-shot jobs with their own images, so each locks
+# independently instead.
+exclude = ["services/sandbox-ocr", "infra/deepeval"]
+
+[dependency-groups]
+dev = [
+    "ruff==0.16.6",
+    "mypy==2.3.1",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "httpx==0.28.1",
+    "types-requests==2.33.0.20260906",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["apps"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+# The codebase deliberately carries long explanatory comments about real
+# constraints; E501 is handled by the formatter, not the linter.
+ignore = ["E501", "B008"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+exclude = ["apps/"]
+
+[tool.pytest.ini_options]
+testpaths = ["services", "infra"]
+asyncio_mode = "auto"

@@ -1,0 +1,28 @@
+# Seven service images build from the repo root so they can see uv.lock.
+# Everything that is not a manifest, a lock file or service source is
+# excluded so that context stays small and no secret is ever sent to the
+# Docker daemon.
+.git
+.gitignore
+.env
+.env.example
+CREDENTIALS.md
+SECRETS GEN GUIDE.md
+.infisical-bootstrap.json
+infra/keycloak/realm-custodian.json
+
+docs/
+apps/
+Makefile
+README.md
+INSTRUCTIONS.md
+
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/node_modules/
+**/.next/
+.DS_Store

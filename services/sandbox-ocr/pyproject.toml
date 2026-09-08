@@ -1,0 +1,13 @@
+[project]
+name = "custodian-sandbox-ocr"
+version = "0.1.0"
+requires-python = "==3.12.*"
+dependencies = [
+    "pytesseract==0.3.13",
+    "pillow==12.3.0",
+    "agent-governance-toolkit-cli==5.0.0",
+    "nono-py==0.10.1",
+]
+
+[tool.uv]
+package = false

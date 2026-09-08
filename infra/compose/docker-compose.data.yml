@@ -241,7 +241,9 @@ services:
           memory: 256M
 
   data-loader:
-    build: ../../custodian-data-loader
+    build:
+      context: ../..
+      dockerfile: services/data-loader/Dockerfile
     container_name: custodian-data-loader
     restart: "no"
     # One-shot job (Step 3), not part of the stack - excluded from a bare
