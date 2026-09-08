@@ -1,6 +1,6 @@
 # 02 — Identity: credential brokering
 
-**What this proves:** `custodian-backend` never actually holds the ledger
+**What this proves:** `verisettle-backend` never actually holds the ledger
 password. Instead it holds a separate, narrow login to a vault (Infisical),
 and fetches the real ledger password fresh, right before each use, then
 throws it away.
@@ -20,13 +20,13 @@ echo "clientId is set: ${PAYMENT_EXECUTION_CLIENT_ID:+yes}"
 ## Step 1 — prove the password genuinely isn't in the agent's environment
 
 ```sh
-docker inspect custodian-backend --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -i ledger
+docker inspect verisettle-backend --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -i ledger
 ```
 
 This looks inside the *running* container's real environment, the same
 place an attacker who broke in would look first.
 
-**What you'll see:** at most `LEDGER_URL=http://custodian-ledger:8000` — an
+**What you'll see:** at most `LEDGER_URL=http://verisettle-ledger:8000` — an
 address, not a password. `LEDGER_API_KEY` never appears here. That's the
 core claim of this whole scenario, proven directly rather than just
 asserted.
@@ -47,7 +47,7 @@ login token, not the secret itself yet) and `"expiresIn":7200` — this login
 token is only good for 2 hours, not forever. If you want to show 
 what's actually inside it, paste the token into https://jwt.io (it's not
 sensitive — no secret values are encoded in it, just metadata) and point
-out `"identityName":"custodian-payment-execution"` — this token is tied to
+out `"identityName":"verisettle-payment-execution"` — this token is tied to
 *that one agent's identity specifically*, not a generic admin login.
 
 **2b — use that token to actually ask the vault for the ledger password:**

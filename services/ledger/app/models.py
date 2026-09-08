@@ -13,7 +13,7 @@ class Base(DeclarativeBase):
 
 
 class Vendor(Base):
-    """Maps to the real vendors table custodian-data-loader seeds from
+    """Maps to the real vendors table verisettle-data-loader seeds from
     USAspending.gov (loader/db.py's VENDORS_SCHEMA) - read-only here, this
     service doesn't create or own the table, just the real lookup used by
     risk-scoring's first-seen-vendor check (Vendor Governance integration)."""
@@ -29,7 +29,7 @@ class Vendor(Base):
 
 
 class HistoricalPayment(Base):
-    """Maps to the real historical_payments table custodian-data-loader
+    """Maps to the real historical_payments table verisettle-data-loader
     seeds from USAspending.gov (loader/db.py's HISTORICAL_PAYMENTS_SCHEMA) -
     one row per real individual payment, not a summary. record_vendor_payment
     now adds a real row here on every genuine settlement too, so this table

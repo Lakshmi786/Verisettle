@@ -4,14 +4,14 @@ requires-python = "==3.12.*"
 
 [manifest]
 members = [
-    "custodian",
-    "custodian-audit-log",
-    "custodian-backend",
-    "custodian-control-plane",
-    "custodian-data-loader",
-    "custodian-ledger",
-    "custodian-policy-service",
-    "custodian-sandbox-runner",
+    "verisettle",
+    "verisettle-audit-log",
+    "verisettle-backend",
+    "verisettle-control-plane",
+    "verisettle-data-loader",
+    "verisettle-ledger",
+    "verisettle-policy-service",
+    "verisettle-sandbox-runner",
 ]
 
 [[package]]
@@ -533,214 +533,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/a0/db537264e234f7273a73ec020873d6d6b39dfd8a53db78b550ca8320440e/cryptography-49.0.0-cp39-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:67e1d20ad9ef3a563c59ef22e7a8a0b8210bd26604369ea4a30a7c66aefe504e", size = 4834820, upload-time = "2026-06-12T20:01:51.847Z" },
     { url = "https://files.pythonhosted.org/packages/93/77/8df9eb486495979bccecd1062e2eaf435250e84437040295b57d09048b0b/cryptography-49.0.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:42b0684e0e40cf26122427802486f6d93aea593612603a94fbf260c7eb1e9c1b", size = 4967968, upload-time = "2026-06-12T20:02:12.524Z" },
     { url = "https://files.pythonhosted.org/packages/c2/e6/f60198ea8d9dfa15fff9ed4ca02ce362f6eadd9ba757dcc50634c4257b63/cryptography-49.0.0-cp39-abi3-win_amd64.whl", hash = "sha256:026ac7423e6fa66872d3bf889be5974507da3944f866f704fa200eadacd00001", size = 3785547, upload-time = "2026-06-12T20:02:26.847Z" },
-]
-
-[[package]]
-name = "custodian"
-version = "0.1.0"
-source = { virtual = "." }
-
-[package.dev-dependencies]
-dev = [
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-    { name = "types-requests" },
-]
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "httpx", specifier = "==0.28.1" },
-    { name = "mypy", specifier = "==2.3.1" },
-    { name = "pytest", specifier = "==9.1.1" },
-    { name = "pytest-asyncio", specifier = "==1.4.0" },
-    { name = "ruff", specifier = "==0.16.6" },
-    { name = "types-requests", specifier = "==2.33.0.20260906" },
-]
-
-[[package]]
-name = "custodian-audit-log"
-version = "0.1.0"
-source = { virtual = "services/audit-log" }
-dependencies = [
-    { name = "boto3" },
-    { name = "fastapi" },
-    { name = "psycopg2-binary" },
-    { name = "pydantic" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "boto3", specifier = "==1.40.45" },
-    { name = "fastapi", specifier = "==0.141.1" },
-    { name = "psycopg2-binary", specifier = "==2.9.12" },
-    { name = "pydantic", specifier = "==2.13.4" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
-]
-
-[[package]]
-name = "custodian-backend"
-version = "0.1.0"
-source = { virtual = "services/backend" }
-dependencies = [
-    { name = "fastapi" },
-    { name = "instructor" },
-    { name = "langgraph" },
-    { name = "langgraph-checkpoint-postgres" },
-    { name = "mlflow" },
-    { name = "openai" },
-    { name = "opentelemetry-api" },
-    { name = "opentelemetry-exporter-otlp-proto-http" },
-    { name = "opentelemetry-instrumentation-fastapi" },
-    { name = "opentelemetry-instrumentation-requests" },
-    { name = "opentelemetry-sdk" },
-    { name = "psycopg", extra = ["binary"] },
-    { name = "pydantic" },
-    { name = "python-multipart" },
-    { name = "requests" },
-    { name = "spiffe" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = "==0.141.1" },
-    { name = "instructor", specifier = "==1.15.4" },
-    { name = "langgraph", specifier = "==1.2.10" },
-    { name = "langgraph-checkpoint-postgres", specifier = "==3.1.2" },
-    { name = "mlflow", specifier = "==3.15.1" },
-    { name = "openai", specifier = "==2.53.0" },
-    { name = "opentelemetry-api", specifier = "==1.44.0" },
-    { name = "opentelemetry-exporter-otlp-proto-http", specifier = "==1.44.0" },
-    { name = "opentelemetry-instrumentation-fastapi", specifier = "==0.65b0" },
-    { name = "opentelemetry-instrumentation-requests", specifier = "==0.65b0" },
-    { name = "opentelemetry-sdk", specifier = "==1.44.0" },
-    { name = "psycopg", extras = ["binary"], specifier = "==3.3.4" },
-    { name = "pydantic", specifier = "==2.13.4" },
-    { name = "python-multipart", specifier = "==0.0.20" },
-    { name = "requests", specifier = "==2.34.2" },
-    { name = "spiffe", specifier = "==0.3.1" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
-]
-
-[[package]]
-name = "custodian-control-plane"
-version = "0.1.0"
-source = { virtual = "services/control-plane" }
-dependencies = [
-    { name = "fastapi" },
-    { name = "psycopg2-binary" },
-    { name = "pydantic" },
-    { name = "requests" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = "==0.141.1" },
-    { name = "psycopg2-binary", specifier = "==2.9.12" },
-    { name = "pydantic", specifier = "==2.13.4" },
-    { name = "requests", specifier = "==2.34.2" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
-]
-
-[[package]]
-name = "custodian-data-loader"
-version = "0.1.0"
-source = { virtual = "services/data-loader" }
-dependencies = [
-    { name = "datasets" },
-    { name = "great-expectations" },
-    { name = "huggingface-hub" },
-    { name = "pandas" },
-    { name = "pillow" },
-    { name = "psycopg2-binary" },
-    { name = "requests" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "datasets", specifier = "==5.0.1" },
-    { name = "great-expectations", specifier = "==0.18.22" },
-    { name = "huggingface-hub", specifier = "==1.20.1" },
-    { name = "pandas", specifier = "==2.3.3" },
-    { name = "pillow", specifier = "==12.1.1" },
-    { name = "psycopg2-binary", specifier = "==2.9.12" },
-    { name = "requests", specifier = "==2.34.2" },
-]
-
-[[package]]
-name = "custodian-ledger"
-version = "0.1.0"
-source = { virtual = "services/ledger" }
-dependencies = [
-    { name = "fastapi" },
-    { name = "psycopg2-binary" },
-    { name = "pydantic" },
-    { name = "requests" },
-    { name = "sqlalchemy" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = "==0.141.1" },
-    { name = "psycopg2-binary", specifier = "==2.9.12" },
-    { name = "pydantic", specifier = "==2.13.4" },
-    { name = "requests", specifier = "==2.34.2" },
-    { name = "sqlalchemy", specifier = "==2.0.51" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
-]
-
-[[package]]
-name = "custodian-policy-service"
-version = "0.1.0"
-source = { virtual = "services/policy-service" }
-dependencies = [
-    { name = "cedarpy" },
-    { name = "fastapi" },
-    { name = "prometheus-client" },
-    { name = "psycopg2-binary" },
-    { name = "pydantic" },
-    { name = "requests" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "cedarpy", specifier = "==4.8.7" },
-    { name = "fastapi", specifier = "==0.141.1" },
-    { name = "prometheus-client", specifier = "==0.26.0" },
-    { name = "psycopg2-binary", specifier = "==2.9.12" },
-    { name = "pydantic", specifier = "==2.13.4" },
-    { name = "requests", specifier = "==2.34.2" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
-]
-
-[[package]]
-name = "custodian-sandbox-runner"
-version = "0.1.0"
-source = { virtual = "services/sandbox-runner" }
-dependencies = [
-    { name = "docker" },
-    { name = "fastapi" },
-    { name = "pydantic" },
-    { name = "requests" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "docker", specifier = "==7.2.0" },
-    { name = "fastapi", specifier = "==0.141.1" },
-    { name = "pydantic", specifier = "==2.13.4" },
-    { name = "requests", specifier = "==2.34.2" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
 ]
 
 [[package]]
@@ -3717,6 +3509,214 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5f/6f/e62b4dfc7ad6518e7eff2516f680d02a0f6eb62c0c212e152ca708a0085e/uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7b5b1ac819a3f946d3b2ee07f09149578ae76066d70b44df3fa990add49a82e4", size = 4426307, upload-time = "2025-10-16T22:16:32.917Z" },
     { url = "https://files.pythonhosted.org/packages/90/60/97362554ac21e20e81bcef1150cb2a7e4ffdaf8ea1e5b2e8bf7a053caa18/uvloop-0.22.1-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:e047cc068570bac9866237739607d1313b9253c3051ad84738cbb095be0537b2", size = 4131970, upload-time = "2025-10-16T22:16:34.015Z" },
     { url = "https://files.pythonhosted.org/packages/99/39/6b3f7d234ba3964c428a6e40006340f53ba37993f46ed6e111c6e9141d18/uvloop-0.22.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:512fec6815e2dd45161054592441ef76c830eddaad55c8aa30952e6fe1ed07c0", size = 4296343, upload-time = "2025-10-16T22:16:35.149Z" },
+]
+
+[[package]]
+name = "verisettle"
+version = "0.1.0"
+source = { virtual = "." }
+
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+    { name = "types-requests" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "mypy", specifier = "==2.3.1" },
+    { name = "pytest", specifier = "==9.1.1" },
+    { name = "pytest-asyncio", specifier = "==1.4.0" },
+    { name = "ruff", specifier = "==0.16.6" },
+    { name = "types-requests", specifier = "==2.33.0.20260906" },
+]
+
+[[package]]
+name = "verisettle-audit-log"
+version = "0.1.0"
+source = { virtual = "services/audit-log" }
+dependencies = [
+    { name = "boto3" },
+    { name = "fastapi" },
+    { name = "psycopg2-binary" },
+    { name = "pydantic" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "boto3", specifier = "==1.40.45" },
+    { name = "fastapi", specifier = "==0.141.1" },
+    { name = "psycopg2-binary", specifier = "==2.9.12" },
+    { name = "pydantic", specifier = "==2.13.4" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
+]
+
+[[package]]
+name = "verisettle-backend"
+version = "0.1.0"
+source = { virtual = "services/backend" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "instructor" },
+    { name = "langgraph" },
+    { name = "langgraph-checkpoint-postgres" },
+    { name = "mlflow" },
+    { name = "openai" },
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-instrumentation-fastapi" },
+    { name = "opentelemetry-instrumentation-requests" },
+    { name = "opentelemetry-sdk" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
+    { name = "python-multipart" },
+    { name = "requests" },
+    { name = "spiffe" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = "==0.141.1" },
+    { name = "instructor", specifier = "==1.15.4" },
+    { name = "langgraph", specifier = "==1.2.10" },
+    { name = "langgraph-checkpoint-postgres", specifier = "==3.1.2" },
+    { name = "mlflow", specifier = "==3.15.1" },
+    { name = "openai", specifier = "==2.53.0" },
+    { name = "opentelemetry-api", specifier = "==1.44.0" },
+    { name = "opentelemetry-exporter-otlp-proto-http", specifier = "==1.44.0" },
+    { name = "opentelemetry-instrumentation-fastapi", specifier = "==0.65b0" },
+    { name = "opentelemetry-instrumentation-requests", specifier = "==0.65b0" },
+    { name = "opentelemetry-sdk", specifier = "==1.44.0" },
+    { name = "psycopg", extras = ["binary"], specifier = "==3.3.4" },
+    { name = "pydantic", specifier = "==2.13.4" },
+    { name = "python-multipart", specifier = "==0.0.20" },
+    { name = "requests", specifier = "==2.34.2" },
+    { name = "spiffe", specifier = "==0.3.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
+]
+
+[[package]]
+name = "verisettle-control-plane"
+version = "0.1.0"
+source = { virtual = "services/control-plane" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "psycopg2-binary" },
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = "==0.141.1" },
+    { name = "psycopg2-binary", specifier = "==2.9.12" },
+    { name = "pydantic", specifier = "==2.13.4" },
+    { name = "requests", specifier = "==2.34.2" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
+]
+
+[[package]]
+name = "verisettle-data-loader"
+version = "0.1.0"
+source = { virtual = "services/data-loader" }
+dependencies = [
+    { name = "datasets" },
+    { name = "great-expectations" },
+    { name = "huggingface-hub" },
+    { name = "pandas" },
+    { name = "pillow" },
+    { name = "psycopg2-binary" },
+    { name = "requests" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "datasets", specifier = "==5.0.1" },
+    { name = "great-expectations", specifier = "==0.18.22" },
+    { name = "huggingface-hub", specifier = "==1.20.1" },
+    { name = "pandas", specifier = "==2.3.3" },
+    { name = "pillow", specifier = "==12.1.1" },
+    { name = "psycopg2-binary", specifier = "==2.9.12" },
+    { name = "requests", specifier = "==2.34.2" },
+]
+
+[[package]]
+name = "verisettle-ledger"
+version = "0.1.0"
+source = { virtual = "services/ledger" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "psycopg2-binary" },
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "sqlalchemy" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = "==0.141.1" },
+    { name = "psycopg2-binary", specifier = "==2.9.12" },
+    { name = "pydantic", specifier = "==2.13.4" },
+    { name = "requests", specifier = "==2.34.2" },
+    { name = "sqlalchemy", specifier = "==2.0.51" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
+]
+
+[[package]]
+name = "verisettle-policy-service"
+version = "0.1.0"
+source = { virtual = "services/policy-service" }
+dependencies = [
+    { name = "cedarpy" },
+    { name = "fastapi" },
+    { name = "prometheus-client" },
+    { name = "psycopg2-binary" },
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cedarpy", specifier = "==4.8.7" },
+    { name = "fastapi", specifier = "==0.141.1" },
+    { name = "prometheus-client", specifier = "==0.26.0" },
+    { name = "psycopg2-binary", specifier = "==2.9.12" },
+    { name = "pydantic", specifier = "==2.13.4" },
+    { name = "requests", specifier = "==2.34.2" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
+]
+
+[[package]]
+name = "verisettle-sandbox-runner"
+version = "0.1.0"
+source = { virtual = "services/sandbox-runner" }
+dependencies = [
+    { name = "docker" },
+    { name = "fastapi" },
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "docker", specifier = "==7.2.0" },
+    { name = "fastapi", specifier = "==0.141.1" },
+    { name = "pydantic", specifier = "==2.13.4" },
+    { name = "requests", specifier = "==2.34.2" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.52.1" },
 ]
 
 [[package]]

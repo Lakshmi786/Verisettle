@@ -1,4 +1,4 @@
-"""Credential brokering for Payment-Execution's calls to custodian-ledger:
+"""Credential brokering for Payment-Execution's calls to verisettle-ledger:
 the ledger API key is never held in the agent's own environment.
 
 Infisical Agent Proxy's "Proxied Services" routing was evaluated first but
@@ -14,7 +14,7 @@ import time
 import requests
 
 INFISICAL_URL = os.environ.get("INFISICAL_URL", "http://infisical:8080")
-LEDGER_URL = os.environ.get("LEDGER_URL", "http://custodian-ledger:8000")
+LEDGER_URL = os.environ.get("LEDGER_URL", "http://verisettle-ledger:8000")
 PROJECT_ID = os.environ["INFISICAL_PROJECT_ID"]
 
 _cached_token = None

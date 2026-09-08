@@ -13,8 +13,8 @@ infisical:PGPASS_INFISICAL
 litellm:PGPASS_LITELLM
 mlflow:PGPASS_MLFLOW
 langfuse:PGPASS_LANGFUSE
-custodian_ledger:PGPASS_CUSTODIAN_LEDGER
-custodian_backend:PGPASS_CUSTODIAN_BACKEND
+verisettle_ledger:PGPASS_VERISETTLE_LEDGER
+verisettle_backend:PGPASS_VERISETTLE_BACKEND
 "
 
 for pair in $MAPPINGS; do

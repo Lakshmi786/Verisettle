@@ -1,4 +1,4 @@
-# Custodian - developer entry point.
+# VeriSettle - developer entry point.
 #
 # Every target here is a thin wrapper over the real scripts and compose
 # files; nothing is hidden behind make-only logic. `make help` lists them.
@@ -44,7 +44,7 @@ down: ## Stop the stack, keeping all data volumes
 ps: ## Show every container and its health status
 	$(COMPOSE) ps --format "table {{.Name}}\t{{.Status}}"
 
-logs: ## Tail logs; SERVICE=custodian-backend to narrow to one
+logs: ## Tail logs; SERVICE=verisettle-backend to narrow to one
 	$(COMPOSE) logs -f $(SERVICE)
 
 restart: ## Recreate a service (fixes WSL2 port-forwarding); SERVICE=name
@@ -59,11 +59,11 @@ clean: ## DESTRUCTIVE - stop the stack and delete every data volume
 # ----------------------------------------------------------------------
 # First run (README steps 0-6). Each step is independently re-runnable.
 # ----------------------------------------------------------------------
-env: ## Generate .env from .env.example with fresh local secrets (refuses to overwrite)
+env: ## Generate .env with fresh local secrets (refuses to overwrite an existing one)
 	sh infra/scripts/generate-env.sh
 
 step0: ## Step 0 - create the Docker network and render the Keycloak realm
-	docker network create custodian-net 2>/dev/null || true
+	docker network create verisettle-net 2>/dev/null || true
 	sh infra/scripts/render-keycloak-realm.sh
 
 step1: ## Step 1 - foundations: Postgres + MinIO
@@ -98,7 +98,7 @@ step6: ## Step 6 - bring up the agent runtime and everything else
 	$(COMPOSE) up -d
 
 sandbox-image: ## Build the locked-down per-invocation OCR sandbox image
-	docker build -t custodian-sandbox-ocr:latest services/sandbox-ocr/
+	docker build -t verisettle-sandbox-ocr:latest services/sandbox-ocr/
 
 bootstrap: step0 step1 step2 ## First run, part 1 - stops so you can paste Infisical values into .env
 	@echo

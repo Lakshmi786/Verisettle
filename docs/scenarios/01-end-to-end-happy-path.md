@@ -94,7 +94,7 @@ ticked up.
 
 A second, independent LLM call assesses fraud/anomaly risk using the
 extracted fields plus this vendor's real history — looked up live from
-`custodian-ledger` (`GET /vendors/lookup`), not supplied by the request.
+`verisettle-ledger` (`GET /vendors/lookup`), not supplied by the request.
 That's deliberate: a self-reported "I'm not a first-time vendor" flag would
 let anyone bypass the first-seen-vendor rule just by asserting it. Which
 model answers this depends on the amount: **above $5,000** it escalates to the expensive
@@ -153,7 +153,7 @@ already said yes.
 ### Layer 9 — Operations: the permanent, tamper-evident record
 
 Every step you just walked through was also written, in real time, as its
-own object in MinIO's `custodian-audit-log` bucket, locked with Object Lock
+own object in MinIO's `verisettle-audit-log` bucket, locked with Object Lock
 in compliance mode — nobody, including an admin, can quietly edit or
 delete one during its retention period.
 
@@ -161,7 +161,7 @@ delete one during its retention period.
 
 Beyond this one run's trail, every LLM call across every agent and every
 policy decision across the whole fleet is continuously visible: **Langfuse**
-for per-call traces/cost, **Grafana**'s Custodian Governance Overview
+for per-call traces/cost, **Grafana**'s VeriSettle Governance Overview
 dashboard for fleet-wide policy-decision and LLM-spend rates. Neither of
 these is specific to this one invoice — that's the point: one run gives you
 an audit trail, the dashboards give you the pattern across all of them.

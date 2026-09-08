@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from .cedar_engine import engine
 from .temporal import check_vendor_rate_limit, ensure_schema, record_decision
 
-app = FastAPI(title="custodian-policy-service", version="1.0.0")
+app = FastAPI(title="verisettle-policy-service", version="1.0.0")
 
 CONTROL_PLANE_URL = os.environ.get("CONTROL_PLANE_URL", "http://control-plane:8000")
 AUDIT_LOG_URL = os.environ.get("AUDIT_LOG_URL", "http://audit-log:8000")

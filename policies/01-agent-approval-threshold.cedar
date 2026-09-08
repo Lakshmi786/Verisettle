@@ -3,18 +3,18 @@
 // i.e. controller or cfo-approver) may approve - never an agent acting
 // alone, regardless of its confidence score.
 forbid (
-    principal is Custodian::Agent,
-    action == Custodian::Action::"ApprovePayment",
-    resource is Custodian::Payment
+    principal is VeriSettle::Agent,
+    action == VeriSettle::Action::"ApprovePayment",
+    resource is VeriSettle::Payment
 )
 when {
     resource.amount > 5000
 };
 
 permit (
-    principal is Custodian::User,
-    action == Custodian::Action::"ApprovePayment",
-    resource is Custodian::Payment
+    principal is VeriSettle::User,
+    action == VeriSettle::Action::"ApprovePayment",
+    resource is VeriSettle::Payment
 )
 when {
     resource.amount > 5000 &&
@@ -23,9 +23,9 @@ when {
 
 // Agents may auto-approve routine amounts at or below the threshold.
 permit (
-    principal is Custodian::Agent,
-    action == Custodian::Action::"ApprovePayment",
-    resource is Custodian::Payment
+    principal is VeriSettle::Agent,
+    action == VeriSettle::Action::"ApprovePayment",
+    resource is VeriSettle::Payment
 )
 when {
     resource.amount <= 5000

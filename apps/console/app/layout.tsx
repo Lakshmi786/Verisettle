@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Custodian Console",
+  title: "VeriSettle Console",
   description: "Governed multi-agent finance operations platform",
 };
 

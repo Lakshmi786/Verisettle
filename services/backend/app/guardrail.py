@@ -28,7 +28,7 @@ class GuardrailVerdict(BaseModel):
 def check_content(text: str) -> GuardrailVerdict:
     client = get_client("extraction")  # guardrail route is shared infra, not agent-specific
     return client.chat.completions.create(
-        model="custodian-guardrail",
+        model="verisettle-guardrail",
         response_model=GuardrailVerdict,
         messages=[
             {"role": "system", "content": f"You are a content-safety classifier. Policy:\n{GUARDRAIL_POLICY}"},

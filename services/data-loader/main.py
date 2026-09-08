@@ -1,7 +1,7 @@
-"""custodian-data-loader: one-time (and re-runnable) seeding tool.
+"""verisettle-data-loader: one-time (and re-runnable) seeding tool.
 
-Pulls real SROIE/CORD invoice data with ground truth into custodian_backend,
-pulls a real bounded USAspending award slice into custodian_ledger as vendor
+Pulls real SROIE/CORD invoice data with ground truth into verisettle_backend,
+pulls a real bounded USAspending award slice into verisettle_ledger as vendor
 master + historical payment data, then runs the Great Expectations shape
 checkpoint against what was loaded.
 """

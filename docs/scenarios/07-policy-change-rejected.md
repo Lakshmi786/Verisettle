@@ -21,13 +21,13 @@ EOF
 **macOS/Linux:**
 ```sh
 docker run --rm -v "$(pwd)/.scratch/bad-policy-a:/policies:ro" -v "$(pwd)/infra/scripts:/scripts:ro" \
-  custodian-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
+  verisettle-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
 ```
 
 **Windows (Git Bash):** 
 ```sh
 MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/.scratch/bad-policy-a:/policies:ro" -v "$(pwd)/infra/scripts:/scripts:ro" \
-  custodian-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
+  verisettle-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
 ```
 
 ## Steps — a subtle bad change
@@ -41,13 +41,13 @@ sed -i 's/5000/500000/g' .scratch/bad-policy-b/01-agent-approval-threshold.cedar
 **macOS/Linux:**
 ```sh
 docker run --rm -v "$(pwd)/.scratch/bad-policy-b:/policies:ro" -v "$(pwd)/infra/scripts:/scripts:ro" \
-  custodian-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
+  verisettle-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
 ```
 
 **Windows (Git Bash):**
 ```sh
 MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/.scratch/bad-policy-b:/policies:ro" -v "$(pwd)/infra/scripts:/scripts:ro" \
-  custodian-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
+  verisettle-policy-service:latest python3 /scripts/validate-cedar-policies.py /policies
 ```
 
 

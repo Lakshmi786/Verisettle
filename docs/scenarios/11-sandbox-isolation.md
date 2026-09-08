@@ -8,7 +8,7 @@
 # no network
 docker run --rm --network none --read-only --tmpfs /tmp:size=16m \
   --user 10001:10001 --cap-drop=ALL --security-opt no-new-privileges \
-  --entrypoint python3 custodian-sandbox-ocr:latest -c "
+  --entrypoint python3 verisettle-sandbox-ocr:latest -c "
 import socket
 try:
     socket.create_connection(('1.1.1.1', 80), timeout=3)
@@ -20,12 +20,12 @@ except OSError as e:
 # not root
 docker run --rm --network none --read-only --tmpfs /tmp:size=16m \
   --user 10001:10001 --cap-drop=ALL --security-opt no-new-privileges \
-  --entrypoint id custodian-sandbox-ocr:latest
+  --entrypoint id verisettle-sandbox-ocr:latest
 
 # read-only filesystem
 docker run --rm --network none --read-only --tmpfs /tmp:size=16m \
   --user 10001:10001 --cap-drop=ALL --security-opt no-new-privileges \
-  --entrypoint sh custodian-sandbox-ocr:latest -c "touch /app/test"
+  --entrypoint sh verisettle-sandbox-ocr:latest -c "touch /app/test"
 ```
 
 ## What you'll see
@@ -36,7 +36,7 @@ docker run --rm --network none --read-only --tmpfs /tmp:size=16m \
 
 ## A second, real layer: Landlock
 
-Those three checks are Docker's own isolation. `custodian-sandbox-ocr`'s real
+Those three checks are Docker's own isolation. `verisettle-sandbox-ocr`'s real
 entrypoint (`ocr.py`) adds one more, independent layer on top: a real,
 kernel-enforced [Landlock](https://landlock.io) ruleset (via Microsoft's
 open-source `agent-governance-toolkit` `NonoSandboxProvider`), applied
@@ -49,7 +49,7 @@ This launches the real OCR sandbox with everything locked down (no network, no r
 ```sh
 docker run --rm --network none --tmpfs /tmp:size=16m --tmpfs /input:size=16m --tmpfs /scratch:size=16m \
   --user 10001:10001 --cap-drop=ALL --security-opt no-new-privileges \
-  --entrypoint python3 custodian-sandbox-ocr:latest -c "
+  --entrypoint python3 verisettle-sandbox-ocr:latest -c "
 import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 from agent_sandbox import NonoSandboxProvider, SandboxConfig

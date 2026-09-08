@@ -26,12 +26,12 @@ import psycopg2
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-app = FastAPI(title="custodian-audit-log", version="1.0.0")
+app = FastAPI(title="verisettle-audit-log", version="1.0.0")
 
-MINIO_BUCKET = "custodian-audit-log"
+MINIO_BUCKET = "verisettle-audit-log"
 VERIFY_INTERVAL_SECONDS = int(os.environ.get("VERIFY_INTERVAL_SECONDS", "30"))
 
-_logger = logging.getLogger("custodian-audit-log")
+_logger = logging.getLogger("verisettle-audit-log")
 
 # In-memory only, same pattern as control-plane's own watchdog state
 # (halted_sessions/paused_agents): tracks which entry IDs are *currently*
@@ -45,9 +45,9 @@ def _pg_connect():
     return psycopg2.connect(
         host=os.environ.get("POSTGRES_HOST", "postgres"),
         port=int(os.environ.get("POSTGRES_PORT", "5432")),
-        dbname="custodian_backend",
-        user="custodian_backend",
-        password=os.environ["PGPASS_CUSTODIAN_BACKEND"],
+        dbname="verisettle_backend",
+        user="verisettle_backend",
+        password=os.environ["PGPASS_VERISETTLE_BACKEND"],
     )
 
 

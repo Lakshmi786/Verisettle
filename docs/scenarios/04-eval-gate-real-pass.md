@@ -11,7 +11,7 @@
 
 2. Check the result in MLflow:
    ```sh
-   curl "http://localhost:5500/api/2.0/mlflow/registered-models/alias?name=custodian-extraction-prompt&alias=production"
+   curl "http://localhost:5500/api/2.0/mlflow/registered-models/alias?name=verisettle-extraction-prompt&alias=production"
    ```
 
 ## What you'll see

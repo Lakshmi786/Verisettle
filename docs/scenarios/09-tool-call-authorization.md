@@ -21,7 +21,7 @@
    indent`, since leading spaces are part of Python's real syntax, not just
    formatting:
 ```sh
-docker exec custodian-backend python3 -c "
+docker exec verisettle-backend python3 -c "
 from app.capability import require_capability, CapabilityDenied
 try:
     require_capability('extraction', 'CreateLedgerEntry')

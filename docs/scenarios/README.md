@@ -66,7 +66,7 @@ A few things that hold true across all 27:
   installed on your host, every `mc ...` command in this doc can be run the
   same way through a throwaway container instead, with no local install:
   ```sh
-  docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "
+  docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "
     mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" >/dev/null
     mc <rest of the command here>
   "

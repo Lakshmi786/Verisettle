@@ -8,8 +8,8 @@
 // itself).
 forbid (
     principal,
-    action == Custodian::Action::"ApprovePayment",
-    resource is Custodian::Payment
+    action == VeriSettle::Action::"ApprovePayment",
+    resource is VeriSettle::Payment
 )
 when {
     resource.vendorFirstSeen == true &&

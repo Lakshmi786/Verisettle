@@ -1,5 +1,5 @@
 [project]
-name = "custodian-sandbox-ocr"
+name = "verisettle-sandbox-ocr"
 version = "0.1.0"
 requires-python = "==3.12.*"
 dependencies = [

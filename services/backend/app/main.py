@@ -20,7 +20,7 @@ UPLOAD_DIR = "/data/invoices/uploads"
 # failure here crashes the container instead of coming up falsely healthy.
 fetch_identity()
 
-app = FastAPI(title="custodian-backend", version="1.0.0")
+app = FastAPI(title="verisettle-backend", version="1.0.0")
 setup_tracing(app)
 _graph = None
 
@@ -133,8 +133,8 @@ def list_runs(limit: int = 50):
     (LangGraph has no generic list-threads call); each thread's state is
     read back through the same get_state() path /runs/{id} uses."""
     db_uri = (
-        f"postgresql://custodian_backend:{os.environ['PGPASS_CUSTODIAN_BACKEND']}"
-        f"@{os.environ.get('POSTGRES_HOST', 'postgres')}:{os.environ.get('POSTGRES_PORT', '5432')}/custodian_backend"
+        f"postgresql://verisettle_backend:{os.environ['PGPASS_VERISETTLE_BACKEND']}"
+        f"@{os.environ.get('POSTGRES_HOST', 'postgres')}:{os.environ.get('POSTGRES_PORT', '5432')}/verisettle_backend"
     )
     with psycopg.connect(db_uri) as conn, conn.cursor() as cur:
         cur.execute(

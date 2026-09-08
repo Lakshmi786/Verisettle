@@ -1,28 +1,28 @@
-name: custodian
+name: verisettle
 
 networks:
-  custodian-net:
+  verisettle-net:
     external: true
-    name: custodian-net
+    name: verisettle-net
 
 services:
   audit-log:
     build:
       context: ../..
       dockerfile: services/audit-log/Dockerfile
-    container_name: custodian-audit-log
+    container_name: verisettle-audit-log
     restart: unless-stopped
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "127.0.0.1:8094:8000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -39,12 +39,12 @@ services:
     build:
       context: ../..
       dockerfile: services/control-plane/Dockerfile
-    container_name: custodian-control-plane
+    container_name: verisettle-control-plane
     restart: unless-stopped
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
       AUDIT_LOG_URL: http://audit-log:8000
     depends_on:
       audit-log:
@@ -52,7 +52,7 @@ services:
     ports:
       - "127.0.0.1:8095:8000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -65,16 +65,16 @@ services:
           cpus: "0.5"
           memory: 256M
 
-  custodian-ledger:
+  verisettle-ledger:
     build:
       context: ../..
       dockerfile: services/ledger/Dockerfile
-    container_name: custodian-ledger
+    container_name: verisettle-ledger
     restart: unless-stopped
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_LEDGER: ${PGPASS_CUSTODIAN_LEDGER}
+      PGPASS_VERISETTLE_LEDGER: ${PGPASS_VERISETTLE_LEDGER}
       LEDGER_API_KEY: ${LEDGER_API_KEY}
       VENDOR_LOOKUP_API_KEY: ${VENDOR_LOOKUP_API_KEY}
       AUDIT_LOG_URL: http://audit-log:8000
@@ -84,7 +84,7 @@ services:
     ports:
       - "127.0.0.1:8090:8000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -101,12 +101,12 @@ services:
     build:
       context: ../..
       dockerfile: services/policy-service/Dockerfile
-    container_name: custodian-policy-service
+    container_name: verisettle-policy-service
     restart: unless-stopped
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
       POLICIES_DIR: /policies
       CONTROL_PLANE_URL: http://control-plane:8000
       AUDIT_LOG_URL: http://audit-log:8000
@@ -120,7 +120,7 @@ services:
     ports:
       - "127.0.0.1:8091:8000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -138,11 +138,11 @@ services:
   # Payment-Execution instead fetches its ledger credential directly via
   # Infisical's Universal Auth, fresh before each call.
 
-  custodian-backend:
+  verisettle-backend:
     build:
       context: ../..
       dockerfile: services/backend/Dockerfile
-    container_name: custodian-backend
+    container_name: verisettle-backend
     restart: unless-stopped
     labels:
       # Matches the SPIRE registration entry in register-spire-entries.sh -
@@ -151,12 +151,12 @@ services:
       # can't be issued to this process: SPIRE attests one identity per
       # workload, and all 4 agents run as function calls inside this same
       # process, not as 4 separate workloads.
-      custodian.service: backend
+      verisettle.service: backend
     environment:
       SPIFFE_ENDPOINT_SOCKET: unix:///run/spire/sockets/agent.sock
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
       LITELLM_URL: http://litellm:4000
       MLFLOW_TRACKING_URI: http://mlflow:5000
       LITELLM_KEY_AGENT_EXTRACTION: ${LITELLM_KEY_AGENT_EXTRACTION}
@@ -164,7 +164,7 @@ services:
       LITELLM_KEY_AGENT_APPROVAL: ${LITELLM_KEY_AGENT_APPROVAL}
       LITELLM_KEY_AGENT_PAYMENT_EXECUTION: ${LITELLM_KEY_AGENT_PAYMENT_EXECUTION}
       POLICY_SERVICE_URL: http://policy-service:8000
-      LEDGER_URL: http://custodian-ledger:8000
+      LEDGER_URL: http://verisettle-ledger:8000
       VENDOR_LOOKUP_API_KEY: ${VENDOR_LOOKUP_API_KEY}
       CONTROL_PLANE_URL: http://control-plane:8000
       SETTLEMENT_HOLD_SECONDS: ${SETTLEMENT_HOLD_SECONDS:-20}
@@ -187,7 +187,7 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -204,18 +204,18 @@ services:
     build:
       context: ../..
       dockerfile: services/sandbox-runner/Dockerfile
-    container_name: custodian-sandbox-runner
+    container_name: verisettle-sandbox-runner
     restart: unless-stopped
     environment:
       POLICY_SERVICE_URL: http://policy-service:8000
-      SANDBOX_IMAGE: custodian-sandbox-ocr:latest
+      SANDBOX_IMAGE: verisettle-sandbox-ocr:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - invoice-images:/data/invoices:ro
     ports:
       - "127.0.0.1:8093:8000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -228,20 +228,20 @@ services:
           cpus: "1.0"
           memory: 384M
 
-  custodian-console:
+  verisettle-console:
     build: ../../apps/console
-    container_name: custodian-console
+    container_name: verisettle-console
     restart: unless-stopped
     environment:
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ${CONSOLE_NEXTAUTH_SECRET}
-      KEYCLOAK_CLIENT_ID: custodian-console
+      KEYCLOAK_CLIENT_ID: verisettle-console
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CONSOLE_CLIENT_SECRET}
       # Browser reaches Keycloak at localhost:8180; this server at keycloak:8080.
       KEYCLOAK_PUBLIC_URL: http://localhost:8180
       KEYCLOAK_INTERNAL_URL: http://keycloak:8080
-      BACKEND_URL: http://custodian-backend:8000
-      LEDGER_URL: http://custodian-ledger:8000
+      BACKEND_URL: http://verisettle-backend:8000
+      LEDGER_URL: http://verisettle-ledger:8000
       LEDGER_API_KEY: ${LEDGER_API_KEY}
       AUDIT_LOG_URL: http://audit-log:8000
       CONTROL_PLANE_URL: http://control-plane:8000
@@ -253,7 +253,7 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "-O", "/dev/null", "http://127.0.0.1:3000/api/auth/session"]
       interval: 10s
@@ -276,4 +276,4 @@ volumes:
   # Compose treat it as the same shared volume either way, no ordering
   # dependency.
   invoice-images:
-    name: custodian_invoice-images
+    name: verisettle_invoice-images

@@ -1,9 +1,9 @@
-name: custodian
+name: verisettle
 
 networks:
-  custodian-net:
+  verisettle-net:
     external: true
-    name: custodian-net
+    name: verisettle-net
 
 volumes:
   om-postgres-data:
@@ -16,7 +16,7 @@ volumes:
 services:
   om-postgres:
     image: docker.getcollate.io/openmetadata/postgresql:1.13.3
-    container_name: custodian-om-postgres
+    container_name: verisettle-om-postgres
     restart: unless-stopped
     command: "--work_mem=10MB"
     environment:
@@ -25,7 +25,7 @@ services:
     volumes:
       - om-postgres-data:/var/lib/postgresql/data
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: psql -U postgres -tAc 'select 1' -d openmetadata_db
       interval: 15s
@@ -40,7 +40,7 @@ services:
 
   om-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
-    container_name: custodian-om-elasticsearch
+    container_name: verisettle-om-elasticsearch
     restart: unless-stopped
     environment:
       - discovery.type=single-node
@@ -49,7 +49,7 @@ services:
     volumes:
       - om-es-data:/usr/share/elasticsearch/data
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: "curl -s http://localhost:9200/_cluster/health?pretty | grep status | grep -qE 'green|yellow' || exit 1"
       interval: 15s
@@ -64,7 +64,7 @@ services:
 
   om-migrate:
     image: docker.getcollate.io/openmetadata/server:1.13.3
-    container_name: custodian-om-migrate
+    container_name: verisettle-om-migrate
     command: "./bootstrap/openmetadata-ops.sh migrate"
     environment: &om-server-env
       OPENMETADATA_CLUSTER_NAME: openmetadata
@@ -87,8 +87,8 @@ services:
       RSA_PRIVATE_KEY_FILE_PATH: "./conf/private_key.der"
       JWT_ISSUER: "open-metadata.org"
       JWT_KEY_ID: "Gb389a-9f76-gdjs-a92j-0242bk94356"
-      PIPELINE_SERVICE_CLIENT_ENDPOINT: http://custodian-om-ingestion:8080
-      SERVER_HOST_API_URL: http://custodian-om-server:8585/api
+      PIPELINE_SERVICE_CLIENT_ENDPOINT: http://verisettle-om-ingestion:8080
+      SERVER_HOST_API_URL: http://verisettle-om-server:8585/api
       PIPELINE_SERVICE_CLIENT_VERIFY_SSL: "no-ssl"
       DB_DRIVER_CLASS: org.postgresql.Driver
       DB_SCHEME: postgresql
@@ -119,7 +119,7 @@ services:
       om-postgres:
         condition: service_healthy
     networks:
-      - custodian-net
+      - verisettle-net
     deploy:
       resources:
         limits:
@@ -128,7 +128,7 @@ services:
 
   om-server:
     image: docker.getcollate.io/openmetadata/server:1.13.3
-    container_name: custodian-om-server
+    container_name: verisettle-om-server
     restart: unless-stopped
     environment: *om-server-env
     ports:
@@ -142,7 +142,7 @@ services:
       om-migrate:
         condition: service_completed_successfully
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8586/healthcheck"]
       interval: 15s
@@ -157,7 +157,7 @@ services:
 
   om-ingestion:
     image: docker.getcollate.io/openmetadata/ingestion:1.13.3
-    container_name: custodian-om-ingestion
+    container_name: verisettle-om-ingestion
     restart: unless-stopped
     entrypoint: /bin/bash
     command: ["/opt/airflow/ingestion_dependency.sh"]
@@ -183,13 +183,13 @@ services:
         condition: service_started
     ports:
       # Host side only - internal traffic (om-server's PIPELINE_SERVICE_CLIENT_ENDPOINT
-      # above) always uses the container port 8080 over custodian-net, unaffected by
+      # above) always uses the container port 8080 over verisettle-net, unaffected by
       # this mapping. 8080 itself is one of the most commonly-already-bound ports on
       # any dev machine (other tooling, other projects, IDE proxies); a real fresh
       # install hit exactly that conflict, so this uses a less contested host port.
       - "127.0.0.1:8087:8080"
     networks:
-      - custodian-net
+      - verisettle-net
     volumes:
       - om-ingestion-dag-airflow:/opt/airflow/dag_generated_configs
       - om-ingestion-dags:/opt/airflow/dags
@@ -202,12 +202,12 @@ services:
 
   presidio-analyzer:
     image: ghcr.io/data-privacy-stack/presidio-analyzer:latest
-    container_name: custodian-presidio-analyzer
+    container_name: verisettle-presidio-analyzer
     restart: unless-stopped
     ports:
       - "127.0.0.1:5002:3000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:3000/health')"]
       interval: 15s
@@ -222,12 +222,12 @@ services:
 
   presidio-anonymizer:
     image: ghcr.io/data-privacy-stack/presidio-anonymizer:latest
-    container_name: custodian-presidio-anonymizer
+    container_name: verisettle-presidio-anonymizer
     restart: unless-stopped
     ports:
       - "127.0.0.1:5001:3000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:3000/health')"]
       interval: 15s
@@ -244,7 +244,7 @@ services:
     build:
       context: ../..
       dockerfile: services/data-loader/Dockerfile
-    container_name: custodian-data-loader
+    container_name: verisettle-data-loader
     restart: "no"
     # One-shot job (Step 3), not part of the stack - excluded from a bare
     # `compose.sh up -d` (Step 6) so it isn't silently re-run; still starts
@@ -254,15 +254,15 @@ services:
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
-      PGPASS_CUSTODIAN_LEDGER: ${PGPASS_CUSTODIAN_LEDGER}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
+      PGPASS_VERISETTLE_LEDGER: ${PGPASS_VERISETTLE_LEDGER}
       USASPENDING_AGENCY: ${USASPENDING_AGENCY}
       USASPENDING_FISCAL_YEAR: ${USASPENDING_FISCAL_YEAR}
       INVOICE_IMAGE_DIR: /data/invoices
     volumes:
       - invoice-images:/data/invoices
     networks:
-      - custodian-net
+      - verisettle-net
     deploy:
       resources:
         limits:

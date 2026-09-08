@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Catalogs Custodian's three real data sources in OpenMetadata with a
+"""Catalogs VeriSettle's three real data sources in OpenMetadata with a
 sensitivity tag, per Data Governance Ground Rule (INSTRUCTIONS.md 5.2):
 invoice inbox, vendor master, payment ledger. Uses PUT (createOrUpdate)
 throughout so this is safely re-runnable.
@@ -31,7 +31,7 @@ def _load_dotenv():
 _load_dotenv()
 
 OM_URL = os.environ.get("OPENMETADATA_URL", "http://localhost:8585")
-SERVICE_NAME = "custodian-postgres"
+SERVICE_NAME = "verisettle-postgres"
 
 SENSITIVITY_TAGS = {
     "Public": "Non-sensitive reference data.",
@@ -45,7 +45,7 @@ SENSITIVITY_TAGS = {
 
 TABLES = [
     {
-        "database": "custodian_backend",
+        "database": "verisettle_backend",
         "schema": "public",
         "name": "invoices",
         "description": "Real SROIE/CORD invoice records with ground-truth annotations, used by the Extraction agent and the Model Governance eval gate.",
@@ -61,7 +61,7 @@ TABLES = [
         ],
     },
     {
-        "database": "custodian_ledger",
+        "database": "verisettle_ledger",
         "schema": "public",
         "name": "vendors",
         "description": "Real vendor master data seeded from USAspending.gov award data - vendor master data source.",
@@ -75,7 +75,7 @@ TABLES = [
         ],
     },
     {
-        "database": "custodian_ledger",
+        "database": "verisettle_ledger",
         "schema": "public",
         "name": "historical_payments",
         "description": "Real historical award/payment records seeded from USAspending.gov - payment ledger data source used for recurring-vs-one-off pattern detection.",
@@ -116,7 +116,7 @@ def main():
 
     put(session, "/api/v1/classifications", {
         "name": "DataSensitivity",
-        "description": "Custodian data sensitivity classification: public, internal, restricted-financial",
+        "description": "VeriSettle data sensitivity classification: public, internal, restricted-financial",
     })
     for tag_name, desc in SENSITIVITY_TAGS.items():
         put(session, "/api/v1/tags", {
@@ -132,10 +132,10 @@ def main():
         "connection": {
             "config": {
                 "type": "Postgres",
-                "username": "custodian_root",
+                "username": "verisettle_root",
                 "authType": {"password": os.environ["POSTGRES_SUPERUSER_PASSWORD"]},
                 "hostPort": "postgres:5432",
-                "database": "custodian_backend",
+                "database": "verisettle_backend",
             }
         },
     })

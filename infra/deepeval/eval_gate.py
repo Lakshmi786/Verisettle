@@ -21,7 +21,7 @@ LITELLM_URL = os.environ.get("LITELLM_URL", "http://litellm:4000")
 LITELLM_KEY = os.environ["LITELLM_KEY"]
 MLFLOW_URL = os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow:5000")
 PROMOTION_THRESHOLD = float(os.environ.get("PROMOTION_THRESHOLD", "0.6"))
-REGISTERED_MODEL_NAME = "custodian-extraction-prompt"
+REGISTERED_MODEL_NAME = "verisettle-extraction-prompt"
 PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
 
 PROMPT_VERSIONS = {
@@ -34,9 +34,9 @@ def fetch_test_records(limit=60):
     conn = psycopg2.connect(
         host=os.environ.get("POSTGRES_HOST", "postgres"),
         port=int(os.environ.get("POSTGRES_PORT", "5432")),
-        dbname="custodian_backend",
-        user="custodian_backend",
-        password=os.environ["PGPASS_CUSTODIAN_BACKEND"],
+        dbname="verisettle_backend",
+        user="verisettle_backend",
+        password=os.environ["PGPASS_VERISETTLE_BACKEND"],
     )
     with conn.cursor() as cur:
         cur.execute("""
@@ -58,7 +58,7 @@ def call_extraction(prompt_template, ocr_text, max_retries=5):
             f"{LITELLM_URL}/chat/completions",
             headers={"Authorization": f"Bearer {LITELLM_KEY}"},
             json={
-                "model": "custodian-routine",
+                "model": "verisettle-routine",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0,
                 "max_tokens": 800,
@@ -200,7 +200,7 @@ def register_and_gate(version_name, result):
 
 def main():
     mlflow.set_tracking_uri(MLFLOW_URL)
-    mlflow.set_experiment("custodian-model-governance")
+    mlflow.set_experiment("verisettle-model-governance")
 
     records = fetch_test_records()
     print(f"Loaded {len(records)} real held-out SROIE test records for the eval gate.\n")

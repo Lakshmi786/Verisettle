@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: custodian
+  - name: verisettle
     orgId: 1
-    folder: Custodian
+    folder: VeriSettle
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30

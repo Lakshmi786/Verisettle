@@ -12,7 +12,7 @@ import requests
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-app = FastAPI(title="custodian-control-plane", version="1.0.0")
+app = FastAPI(title="verisettle-control-plane", version="1.0.0")
 
 AUDIT_LOG_URL = os.environ.get("AUDIT_LOG_URL", "http://audit-log:8000")
 HEARTBEAT_STALE_SECONDS = int(os.environ.get("HEARTBEAT_STALE_SECONDS", "45"))
@@ -38,9 +38,9 @@ def _pg_connect():
     return psycopg2.connect(
         host=os.environ.get("POSTGRES_HOST", "postgres"),
         port=int(os.environ.get("POSTGRES_PORT", "5432")),
-        dbname="custodian_backend",
-        user="custodian_backend",
-        password=os.environ["PGPASS_CUSTODIAN_BACKEND"],
+        dbname="verisettle_backend",
+        user="verisettle_backend",
+        password=os.environ["PGPASS_VERISETTLE_BACKEND"],
     )
 
 

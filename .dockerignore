@@ -5,11 +5,10 @@
 .git
 .gitignore
 .env
-.env.example
 CREDENTIALS.md
 SECRETS GEN GUIDE.md
 .infisical-bootstrap.json
-infra/keycloak/realm-custodian.json
+infra/keycloak/realm-verisettle.json
 
 docs/
 apps/

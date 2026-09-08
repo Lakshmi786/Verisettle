@@ -32,10 +32,10 @@ def run(state: InvoiceRunState) -> InvoiceRunState:
     amount = extraction.get("total") or 0
 
     client = get_client("approval")
-    with llm_span("approval", "custodian-reasoning") as record_usage:
+    with llm_span("approval", "verisettle-reasoning") as record_usage:
         decision: ApprovalDecision
         decision, completion = client.chat.completions.create_with_completion(
-            model="custodian-reasoning",
+            model="verisettle-reasoning",
             response_model=ApprovalDecision,
             messages=[{"role": "user", "content": APPROVAL_PROMPT.format(extraction=extraction, risk=risk)}],
             max_retries=2,
@@ -62,10 +62,10 @@ def run(state: InvoiceRunState) -> InvoiceRunState:
 
     # Dual-agent critic: a second opinion from the other provider before a payment executes.
     critic_client = get_client("risk-scoring")  # Groq-backed route: the other provider from approval's OpenAI call
-    with llm_span("critic", "custodian-routine") as record_usage:
+    with llm_span("critic", "verisettle-routine") as record_usage:
         critic: CriticReview
         critic, completion = critic_client.chat.completions.create_with_completion(
-            model="custodian-routine",
+            model="verisettle-routine",
             response_model=CriticReview,
             messages=[{"role": "user", "content": CRITIC_PROMPT.format(
                 extraction=extraction, risk=risk, decision=decision.model_dump())}],

@@ -11,7 +11,7 @@ work, so this runs the same way on every machine with no manual step.
 Fails loudly if Landlock isn't available on the host kernel, rather than
 silently running ocr_worker.py unsandboxed - same "no silent fallback"
 principle used everywhere else in this project (see e.g. the settlement
-hold / kill-switch fail-open-but-loud comments in custodian-backend).
+hold / kill-switch fail-open-but-loud comments in verisettle-backend).
 """
 import os
 import sys

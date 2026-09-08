@@ -16,22 +16,22 @@ INFISICAL_URL = "http://localhost:8443"
 # Mirrors each agent's capability manifest: allowed model routes + per-day budget.
 AGENT_KEYS = {
     "agent-extraction": {
-        "models": ["custodian-routine", "custodian-guardrail"],
+        "models": ["verisettle-routine", "verisettle-guardrail"],
         "max_budget": 2.00,
         "metadata": {"agent": "extraction", "trust_tier": "read-only"},
     },
     "agent-risk-scoring": {
-        "models": ["custodian-routine", "custodian-reasoning", "custodian-guardrail"],
+        "models": ["verisettle-routine", "verisettle-reasoning", "verisettle-guardrail"],
         "max_budget": 5.00,
         "metadata": {"agent": "risk-scoring", "trust_tier": "read-and-flag"},
     },
     "agent-approval": {
-        "models": ["custodian-reasoning", "custodian-guardrail"],
+        "models": ["verisettle-reasoning", "verisettle-guardrail"],
         "max_budget": 3.00,
         "metadata": {"agent": "approval", "trust_tier": "read-and-flag"},
     },
     "agent-payment-execution": {
-        "models": ["custodian-reasoning", "custodian-guardrail"],
+        "models": ["verisettle-reasoning", "verisettle-guardrail"],
         "max_budget": 3.00,
         "metadata": {"agent": "payment-execution", "trust_tier": "write-ledger"},
     },
@@ -74,7 +74,7 @@ def main():
     infisical_token = infisical_state["identity"]["credentials"]["token"]
 
     projects = infisical_api("GET", "/api/v1/projects", infisical_token)["projects"]
-    project_id = next(p["id"] for p in projects if p["name"] == "custodian")
+    project_id = next(p["id"] for p in projects if p["name"] == "verisettle")
 
     created = {}
     for alias, cfg in AGENT_KEYS.items():
@@ -104,7 +104,7 @@ def main():
               f"models={cfg['models']}, stored in Infisical as {secret_name}")
 
     if created:
-        # custodian-backend's own docker-compose.app.yml reads these as
+        # verisettle-backend's own docker-compose.app.yml reads these as
         # ${LITELLM_KEY_AGENT_*} from .env directly (not from Infisical at
         # runtime) - Infisical alone isn't enough to actually run the stack.
         print()

@@ -46,35 +46,35 @@ def run_authorization_matrix(policy_text, schema_json):
     """Real authorization calls proving the shipped policy set produces the
     outcomes the docs claim, not just that it parses."""
     entities = cedarpy.Entities.from_json_str(json.dumps([
-        {"uid": {"type": "Custodian::Agent", "id": "payment-execution"},
+        {"uid": {"type": "VeriSettle::Agent", "id": "payment-execution"},
          "attrs": {"trustTier": "write-ledger"}, "parents": []},
-        {"uid": {"type": "Custodian::Agent", "id": "extraction"},
+        {"uid": {"type": "VeriSettle::Agent", "id": "extraction"},
          "attrs": {"trustTier": "read-only"}, "parents": []},
-        {"uid": {"type": "Custodian::Agent", "id": "risk-scoring"},
+        {"uid": {"type": "VeriSettle::Agent", "id": "risk-scoring"},
          "attrs": {"trustTier": "read-and-flag"}, "parents": []},
-        {"uid": {"type": "Custodian::User", "id": "controller.demo"},
+        {"uid": {"type": "VeriSettle::User", "id": "controller.demo"},
          "attrs": {"approvalAuthorityTier": 2}, "parents": []},
-        {"uid": {"type": "Custodian::Payment", "id": "routine-1"},
+        {"uid": {"type": "VeriSettle::Payment", "id": "routine-1"},
          "attrs": {"amount": 500, "vendorFirstSeen": False, "vendor": "Acme", "approvalCount": 0}, "parents": []},
-        {"uid": {"type": "Custodian::Payment", "id": "large-1"},
+        {"uid": {"type": "VeriSettle::Payment", "id": "large-1"},
          "attrs": {"amount": 50000, "vendorFirstSeen": False, "vendor": "Acme", "approvalCount": 0}, "parents": []},
     ]))
 
     cases = [
         ("agent may auto-approve a routine payment",
-         "Custodian::Agent::\"payment-execution\"", "Custodian::Action::\"ApprovePayment\"", "Custodian::Payment::\"routine-1\"",
+         "VeriSettle::Agent::\"payment-execution\"", "VeriSettle::Action::\"ApprovePayment\"", "VeriSettle::Payment::\"routine-1\"",
          cedarpy.Decision.Allow),
         ("agent may NOT auto-approve a payment above threshold",
-         "Custodian::Agent::\"payment-execution\"", "Custodian::Action::\"ApprovePayment\"", "Custodian::Payment::\"large-1\"",
+         "VeriSettle::Agent::\"payment-execution\"", "VeriSettle::Action::\"ApprovePayment\"", "VeriSettle::Payment::\"large-1\"",
          cedarpy.Decision.Deny),
         ("a tier-2 human MAY approve a payment above threshold",
-         "Custodian::User::\"controller.demo\"", "Custodian::Action::\"ApprovePayment\"", "Custodian::Payment::\"large-1\"",
+         "VeriSettle::User::\"controller.demo\"", "VeriSettle::Action::\"ApprovePayment\"", "VeriSettle::Payment::\"large-1\"",
          cedarpy.Decision.Allow),
         ("risk-scoring MAY flag a payment for review",
-         "Custodian::Agent::\"risk-scoring\"", "Custodian::Action::\"FlagForReview\"", "Custodian::Payment::\"large-1\"",
+         "VeriSettle::Agent::\"risk-scoring\"", "VeriSettle::Action::\"FlagForReview\"", "VeriSettle::Payment::\"large-1\"",
          cedarpy.Decision.Allow),
         ("risk-scoring may NOT update a vendor record (approval-only action)",
-         "Custodian::Agent::\"risk-scoring\"", "Custodian::Action::\"UpdateVendorRecord\"", "Custodian::Payment::\"large-1\"",
+         "VeriSettle::Agent::\"risk-scoring\"", "VeriSettle::Action::\"UpdateVendorRecord\"", "VeriSettle::Payment::\"large-1\"",
          cedarpy.Decision.Deny),
     ]
 

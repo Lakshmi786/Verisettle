@@ -6,7 +6,7 @@
 
 The critic only runs after the Approval agent reaches a confident
 `auto_approve` — and vendor trust is now looked up for real from
-`custodian-ledger`, not accepted from the request (see scenario 01, Layer
+`verisettle-ledger`, not accepted from the request (see scenario 01, Layer
 4), so a made-up, never-seen-before vendor name will get escalated to a
 human instead of auto-approved, and the critic step this scenario needs
 would never run. Establish real history first, then reuse the exact same
@@ -41,7 +41,7 @@ vendor:
 3. Check that the same three roles are still separately restricted.
    
 ```sh
-docker exec custodian-backend python3 -c "
+docker exec verisettle-backend python3 -c "
 from app.capability import require_capability, CapabilityDenied
 for agent, action in [('risk-scoring','CreateLedgerEntry'), ('approval','CreateLedgerEntry'), ('payment-execution','ApprovePayment')]:
     try:

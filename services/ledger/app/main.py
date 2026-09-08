@@ -21,13 +21,13 @@ LEDGER_API_KEY = os.environ["LEDGER_API_KEY"]
 VENDOR_LOOKUP_API_KEY = os.environ["VENDOR_LOOKUP_API_KEY"]
 AUDIT_LOG_URL = os.environ.get("AUDIT_LOG_URL", "http://audit-log:8000")
 
-app = FastAPI(title="custodian-ledger", version="1.0.0")
+app = FastAPI(title="verisettle-ledger", version="1.0.0")
 
 
 def _audit(event_type: str, payload: dict):
     try:
         requests.post(f"{AUDIT_LOG_URL}/append", json={
-            "event_type": event_type, "source_service": "custodian-ledger", "payload": payload,
+            "event_type": event_type, "source_service": "verisettle-ledger", "payload": payload,
         }, timeout=5)
     except requests.RequestException:
         pass
@@ -176,10 +176,10 @@ def record_vendor_payment(req: RecordVendorPaymentRequest, db: Session = Depends
 
     db.add(HistoricalPayment(
         vendor_id=vendor.id,
-        award_id=f"custodian-{req.idempotency_key}",
+        award_id=f"verisettle-{req.idempotency_key}",
         amount=req.amount,
         action_date=datetime.now(timezone.utc).date(),
-        awarding_agency="Custodian AP",
+        awarding_agency="VeriSettle AP",
         # ponytail: real recurring-payment detection (matching amount/cadence
         # across prior rows) is a real upgrade, not built here - every live
         # payment is recorded as non-recurring until that's added.

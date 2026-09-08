@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/config";
 
-// Proxies a multipart image upload straight through to custodian-backend's
+// Proxies a multipart image upload straight through to verisettle-backend's
 // /runs/from-image - no auth gate here, same as the read-only /api/runs
 // list and the plain `POST /runs` backend route it's testing (submitting a
 // test invoice isn't a financial control action; only /resume, which

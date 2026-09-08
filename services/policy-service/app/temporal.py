@@ -19,9 +19,9 @@ def _connect():
     return psycopg2.connect(
         host=os.environ.get("POSTGRES_HOST", "postgres"),
         port=int(os.environ.get("POSTGRES_PORT", "5432")),
-        dbname="custodian_backend",
-        user="custodian_backend",
-        password=os.environ["PGPASS_CUSTODIAN_BACKEND"],
+        dbname="verisettle_backend",
+        user="verisettle_backend",
+        password=os.environ["PGPASS_VERISETTLE_BACKEND"],
     )
 
 

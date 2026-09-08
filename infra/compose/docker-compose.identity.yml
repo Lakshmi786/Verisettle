@@ -1,9 +1,9 @@
-name: custodian
+name: verisettle
 
 networks:
-  custodian-net:
+  verisettle-net:
     external: true
-    name: custodian-net
+    name: verisettle-net
 
 volumes:
   keycloak-data:
@@ -15,7 +15,7 @@ volumes:
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.4
-    container_name: custodian-keycloak
+    container_name: verisettle-keycloak
     restart: unless-stopped
     command: ["start-dev", "--import-realm", "--health-enabled=true"]
     environment:
@@ -30,13 +30,13 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_PROXY_HEADERS: "xforwarded"
     volumes:
-      - ../keycloak/realm-custodian.json:/opt/keycloak/data/import/realm-custodian.json:ro
+      - ../keycloak/realm-verisettle.json:/opt/keycloak/data/import/realm-verisettle.json:ro
       - keycloak-data:/opt/keycloak/data/h2
     ports:
       - "127.0.0.1:8180:8080"
       - "127.0.0.1:9090:9000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
       interval: 10s
@@ -51,17 +51,17 @@ services:
 
   spire-server-data-init:
     image: alpine:3.22
-    container_name: custodian-spire-server-data-init
+    container_name: verisettle-spire-server-data-init
     command: ["chown", "-R", "1000:1000", "/run/spire/data"]
     volumes:
       - spire-server-data:/run/spire/data
     networks:
-      - custodian-net
+      - verisettle-net
     restart: "no"
 
   spire-server:
     image: ghcr.io/spiffe/spire-server:1.15.2
-    container_name: custodian-spire-server
+    container_name: verisettle-spire-server
     restart: unless-stopped
     command: ["-config", "/run/spire/config/server.conf"]
     depends_on:
@@ -73,7 +73,7 @@ services:
     ports:
       - "127.0.0.1:8081:8081"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "/opt/spire/bin/spire-server", "healthcheck", "-socketPath", "/run/spire/data/api.sock"]
       interval: 10s
@@ -88,18 +88,18 @@ services:
 
   spire-agent-data-init:
     image: alpine:3.22
-    container_name: custodian-spire-agent-data-init
+    container_name: verisettle-spire-agent-data-init
     command: ["sh", "-c", "chown -R 1000:1000 /run/spire/data /run/spire/sockets"]
     volumes:
       - spire-agent-data:/run/spire/data
       - spire-agent-sockets:/run/spire/sockets
     networks:
-      - custodian-net
+      - verisettle-net
     restart: "no"
 
   spire-agent:
     image: ghcr.io/spiffe/spire-agent:1.15.2
-    container_name: custodian-spire-agent
+    container_name: verisettle-spire-agent
     restart: unless-stopped
     pid: host
     command: ["-config", "/run/spire/config/agent.conf", "-expandEnv"]
@@ -116,7 +116,7 @@ services:
       - spire-agent-sockets:/run/spire/sockets
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - custodian-net
+      - verisettle-net
     deploy:
       resources:
         limits:
@@ -125,13 +125,13 @@ services:
 
   infisical-redis:
     image: redis:8.2-alpine
-    container_name: custodian-infisical-redis
+    container_name: verisettle-infisical-redis
     restart: unless-stopped
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     volumes:
       - infisical-redis-data:/data
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -145,7 +145,7 @@ services:
 
   infisical:
     image: infisical/infisical:v0.162.18
-    container_name: custodian-infisical
+    container_name: verisettle-infisical
     restart: unless-stopped
     depends_on:
       infisical-redis:
@@ -160,7 +160,7 @@ services:
     ports:
       - "127.0.0.1:8443:8080"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/status"]
       interval: 10s

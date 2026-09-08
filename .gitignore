@@ -1,13 +1,14 @@
 # Real secret values - never commit.
 # .env holds this machine's actual credentials; CREDENTIALS.md is the local
-# listing of them. .env.example (placeholders only) and SECRETS GEN GUIDE.md
-# (the generation commands, no values) ARE committed - they are what lets a
-# fresh clone run `make env` and get a working stack.
+# listing of them. There is deliberately no .env.example: the env layout
+# lives inside infra/scripts/generate-env.sh, so a fresh clone runs
+# `make env` and gets its own secrets, and no env file is ever committed.
 .env
+.env.*
 CREDENTIALS.md
 
 # Rendered/bootstrapped files containing real secrets
-infra/keycloak/realm-custodian.json
+infra/keycloak/realm-verisettle.json
 .infisical-bootstrap.json
 
 # Python

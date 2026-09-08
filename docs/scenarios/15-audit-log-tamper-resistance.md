@@ -19,19 +19,19 @@
    **If you have `mc` installed:**
    ```sh
    mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
-   KEY=$(mc ls local/custodian-audit-log | head -1 | awk '{print $NF}')
-   mc retention info "local/custodian-audit-log/$KEY"
-   echo "TAMPERED" | mc pipe "local/custodian-audit-log/$KEY"
-   mc rm "local/custodian-audit-log/$KEY"
+   KEY=$(mc ls local/verisettle-audit-log | head -1 | awk '{print $NF}')
+   mc retention info "local/verisettle-audit-log/$KEY"
+   echo "TAMPERED" | mc pipe "local/verisettle-audit-log/$KEY"
+   mc rm "local/verisettle-audit-log/$KEY"
    ```
 
    **If you don't have `mc` installed** (no separate install needed):
    ```sh
    set -a; source .env; set +a
-   KEY=$(docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls local/custodian-audit-log" | head -1 | awk '{print $NF}')
-   docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc retention info 'local/custodian-audit-log/$KEY'"
-   docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; echo TAMPERED | mc pipe 'local/custodian-audit-log/$KEY'"
-   docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc rm 'local/custodian-audit-log/$KEY'"
+   KEY=$(docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls local/verisettle-audit-log" | head -1 | awk '{print $NF}')
+   docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc retention info 'local/verisettle-audit-log/$KEY'"
+   docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; echo TAMPERED | mc pipe 'local/verisettle-audit-log/$KEY'"
+   docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc rm 'local/verisettle-audit-log/$KEY'"
    ```
    Either way, this grabs the oldest real audit-log entry from MinIO,
    confirms it's really locked, then tries to overwrite it and delete it.
@@ -56,7 +56,7 @@ your last action. This was tested live, in order:
 
 1. **List every version of the tampered key:**
    ```sh
-   docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls --versions 'local/custodian-audit-log/$KEY'"
+   docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls --versions 'local/verisettle-audit-log/$KEY'"
    ```
    You'll see three real versions stacked on the same key: `v1` (the
    original, locked, still fully intact), `v2` (the `TAMPERED` content from
@@ -65,8 +65,8 @@ your last action. This was tested live, in order:
 2. The first command found and saved the delete marker's ID number; the second command deleted that specific marker, revealing the tampered version underneath it (not the real original).
 
    ```sh
-   V3=$(docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls --versions 'local/custodian-audit-log/$KEY'" | grep " v3 " | awk '{print $6}')
-   docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc rm --version-id=$V3 'local/custodian-audit-log/$KEY'"
+   V3=$(docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls --versions 'local/verisettle-audit-log/$KEY'" | grep " v3 " | awk '{print $6}')
+   docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc rm --version-id=$V3 'local/verisettle-audit-log/$KEY'"
    curl http://localhost:8094/verify
    ```
    Real result: still `"valid": false` — just with a *different* reason
@@ -77,10 +77,10 @@ your last action. This was tested live, in order:
 3. **Full recovery — fetch `v1`'s real bytes and write them back as a
    brand-new top version:**
    ```sh
-   V1=$(docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls --versions 'local/custodian-audit-log/$KEY'" | grep " v1 " | awk '{print $6}')
-   docker run --rm --network custodian-net --entrypoint sh minio/mc:latest -c "
+   V1=$(docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1; mc ls --versions 'local/verisettle-audit-log/$KEY'" | grep " v1 " | awk '{print $6}')
+   docker run --rm --network verisettle-net --entrypoint sh minio/mc:latest -c "
      mc alias set local http://minio:9000 '$MINIO_ROOT_USER' '$MINIO_ROOT_PASSWORD' >/dev/null 2>&1
-     mc cat --version-id=$V1 'local/custodian-audit-log/$KEY' | mc pipe 'local/custodian-audit-log/$KEY'
+     mc cat --version-id=$V1 'local/verisettle-audit-log/$KEY' | mc pipe 'local/verisettle-audit-log/$KEY'
    "
    curl http://localhost:8094/verify
    ```

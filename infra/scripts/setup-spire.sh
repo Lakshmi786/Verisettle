@@ -9,14 +9,14 @@
 set -eu
 cd "$(dirname "$0")/../.."
 
-TOKEN=$(MSYS_NO_PATHCONV=1 docker exec custodian-spire-server \
+TOKEN=$(MSYS_NO_PATHCONV=1 docker exec verisettle-spire-server \
   /opt/spire/bin/spire-server token generate \
   -socketPath /run/spire/data/api.sock \
-  -spiffeID spiffe://custodian.local/agent/docker-agent \
+  -spiffeID spiffe://verisettle.local/agent/docker-agent \
   | sed -n 's/^Token: //p')
 
 if [ -z "$TOKEN" ]; then
-  echo "failed to generate a join token - is custodian-spire-server up?" >&2
+  echo "failed to generate a join token - is verisettle-spire-server up?" >&2
   exit 1
 fi
 

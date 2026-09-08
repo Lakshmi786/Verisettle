@@ -10,7 +10,7 @@ import os
 
 import requests
 
-LEDGER_URL = os.environ.get("LEDGER_URL", "http://custodian-ledger:8000")
+LEDGER_URL = os.environ.get("LEDGER_URL", "http://verisettle-ledger:8000")
 VENDOR_LOOKUP_API_KEY = os.environ["VENDOR_LOOKUP_API_KEY"]
 
 

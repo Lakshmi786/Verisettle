@@ -1,7 +1,7 @@
 {
-  "uid": "custodian-governance",
-  "title": "Custodian Governance Overview",
-  "tags": ["custodian"],
+  "uid": "verisettle-governance",
+  "title": "VeriSettle Governance Overview",
+  "tags": ["verisettle"],
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 1,
@@ -12,7 +12,7 @@
       "id": 1,
       "title": "Policy decisions/sec by outcome",
       "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "datasource": { "type": "prometheus", "uid": "verisettle-prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
@@ -26,7 +26,7 @@
       "id": 2,
       "title": "Policy denials/sec by agent",
       "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "datasource": { "type": "prometheus", "uid": "verisettle-prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
@@ -40,7 +40,7 @@
       "id": 3,
       "title": "LLM spend/sec by agent (LiteLLM virtual key)",
       "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "datasource": { "type": "prometheus", "uid": "verisettle-prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
       "targets": [
@@ -55,7 +55,7 @@
       "id": 4,
       "title": "LLM request latency p95 by model",
       "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "datasource": { "type": "prometheus", "uid": "verisettle-prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
@@ -70,7 +70,7 @@
       "id": 5,
       "title": "Total policy denials (24h)",
       "type": "stat",
-      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "datasource": { "type": "prometheus", "uid": "verisettle-prometheus" },
       "gridPos": { "h": 6, "w": 6, "x": 0, "y": 16 },
       "targets": [
         {
@@ -83,7 +83,7 @@
       "id": 6,
       "title": "Total LLM spend (24h, USD)",
       "type": "stat",
-      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "datasource": { "type": "prometheus", "uid": "verisettle-prometheus" },
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 16 },
       "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
       "targets": [

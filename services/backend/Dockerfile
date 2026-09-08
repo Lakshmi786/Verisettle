@@ -17,7 +17,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /workspace
 COPY pyproject.toml uv.lock ./
 COPY services/backend/pyproject.toml services/backend/
-RUN uv sync --frozen --no-dev --package custodian-backend
+RUN uv sync --frozen --no-dev --package verisettle-backend
 
 WORKDIR /app
 ENV PATH="/opt/venv/bin:$PATH" \

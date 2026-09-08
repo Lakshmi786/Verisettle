@@ -23,10 +23,10 @@ _initialized = False
 def setup_tracing(app=None):
     global _initialized
     if _initialized:
-        return trace.get_tracer("custodian-backend")
+        return trace.get_tracer("verisettle-backend")
 
     auth = base64.b64encode(f"{LANGFUSE_PUBLIC_KEY}:{LANGFUSE_SECRET_KEY}".encode()).decode()
-    provider = TracerProvider(resource=Resource.create({"service.name": "custodian-backend"}))
+    provider = TracerProvider(resource=Resource.create({"service.name": "verisettle-backend"}))
     exporter = OTLPSpanExporter(
         endpoint=f"{LANGFUSE_URL}/api/public/otel/v1/traces",
         headers={"Authorization": f"Basic {auth}", "x-langfuse-ingestion-version": "4"},
@@ -40,7 +40,7 @@ def setup_tracing(app=None):
         FastAPIInstrumentor.instrument_app(app)
 
     _initialized = True
-    return trace.get_tracer("custodian-backend")
+    return trace.get_tracer("verisettle-backend")
 
 
 @contextlib.contextmanager
@@ -48,7 +48,7 @@ def llm_span(agent: str, model: str, operation: str = "chat"):
     """Wraps one LLM call with GenAI-convention attributes. Yields a
     callback to record the real token usage once the completion returns -
     real numbers from the provider's response, never estimated."""
-    tracer = trace.get_tracer("custodian-backend")
+    tracer = trace.get_tracer("verisettle-backend")
     with tracer.start_as_current_span(f"{operation} {model}") as span:
         span.set_attribute("gen_ai.system", "litellm")
         span.set_attribute("gen_ai.operation.name", operation)

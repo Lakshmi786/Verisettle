@@ -4,8 +4,8 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 // Browser reaches Keycloak at localhost:8180; this server reaches it at
 // keycloak:8080 - one discovered "issuer" can't serve both, so every
 // endpoint is set explicitly instead of using OIDC discovery.
-const PUBLIC_BASE = `${process.env.KEYCLOAK_PUBLIC_URL}/realms/custodian`;
-const INTERNAL_BASE = `${process.env.KEYCLOAK_INTERNAL_URL}/realms/custodian`;
+const PUBLIC_BASE = `${process.env.KEYCLOAK_PUBLIC_URL}/realms/verisettle`;
+const INTERNAL_BASE = `${process.env.KEYCLOAK_INTERNAL_URL}/realms/verisettle`;
 
 export const authOptions: NextAuthOptions = {
   providers: [

@@ -17,7 +17,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /workspace
 COPY pyproject.toml uv.lock ./
 COPY services/audit-log/pyproject.toml services/audit-log/
-RUN uv sync --frozen --no-dev --package custodian-audit-log
+RUN uv sync --frozen --no-dev --package verisettle-audit-log
 
 WORKDIR /app
 ENV PATH="/opt/venv/bin:$PATH" \

@@ -68,8 +68,8 @@ def build_graph():
     graph.add_edge("payment_execution", END)
 
     db_uri = (
-        f"postgresql://custodian_backend:{os.environ['PGPASS_CUSTODIAN_BACKEND']}"
-        f"@{os.environ.get('POSTGRES_HOST', 'postgres')}:{os.environ.get('POSTGRES_PORT', '5432')}/custodian_backend"
+        f"postgresql://verisettle_backend:{os.environ['PGPASS_VERISETTLE_BACKEND']}"
+        f"@{os.environ.get('POSTGRES_HOST', 'postgres')}:{os.environ.get('POSTGRES_PORT', '5432')}/verisettle_backend"
     )
     # Plain long-lived connection, not from_conn_string()'s context manager
     # (that closes on exit, wrong for a checkpointer outliving many requests).

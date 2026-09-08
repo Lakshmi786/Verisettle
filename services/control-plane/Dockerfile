@@ -17,7 +17,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /workspace
 COPY pyproject.toml uv.lock ./
 COPY services/control-plane/pyproject.toml services/control-plane/
-RUN uv sync --frozen --no-dev --package custodian-control-plane
+RUN uv sync --frozen --no-dev --package verisettle-control-plane
 
 WORKDIR /app
 ENV PATH="/opt/venv/bin:$PATH" \

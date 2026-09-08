@@ -22,7 +22,7 @@ export function Nav() {
     <nav className="border-b border-neutral-800 bg-neutral-950">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
-          <span className="font-semibold text-neutral-100">Custodian</span>
+          <span className="font-semibold text-neutral-100">VeriSettle</span>
           <div className="flex gap-4 text-sm">
             {LINKS.map((l) => (
               <Link

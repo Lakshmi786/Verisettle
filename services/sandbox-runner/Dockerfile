@@ -15,7 +15,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /workspace
 COPY pyproject.toml uv.lock ./
 COPY services/sandbox-runner/pyproject.toml services/sandbox-runner/
-RUN uv sync --frozen --no-dev --package custodian-sandbox-runner
+RUN uv sync --frozen --no-dev --package verisettle-sandbox-runner
 
 WORKDIR /app
 ENV PATH="/opt/venv/bin:$PATH" \

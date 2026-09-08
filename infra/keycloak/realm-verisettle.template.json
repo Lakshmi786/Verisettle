@@ -1,7 +1,7 @@
 {
-  "realm": "custodian",
+  "realm": "verisettle",
   "enabled": true,
-  "displayName": "Custodian Finance Ops",
+  "displayName": "VeriSettle Finance Ops",
   "sslRequired": "none",
   "registrationAllowed": false,
   "resetPasswordAllowed": true,
@@ -27,8 +27,8 @@
   },
   "clients": [
     {
-      "clientId": "custodian-backend",
-      "name": "Custodian Backend (FastAPI)",
+      "clientId": "verisettle-backend",
+      "name": "VeriSettle Backend (FastAPI)",
       "enabled": true,
       "publicClient": false,
       "protocol": "openid-connect",
@@ -36,11 +36,11 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "redirectUris": [],
-      "secret": "__CUSTODIAN_BACKEND_CLIENT_SECRET__"
+      "secret": "__VERISETTLE_BACKEND_CLIENT_SECRET__"
     },
     {
-      "clientId": "custodian-console",
-      "name": "Custodian Console (Next.js)",
+      "clientId": "verisettle-console",
+      "name": "VeriSettle Console (Next.js)",
       "enabled": true,
       "publicClient": false,
       "protocol": "openid-connect",
@@ -48,7 +48,7 @@
       "directAccessGrantsEnabled": true,
       "redirectUris": ["http://localhost:3000/*"],
       "webOrigins": ["http://localhost:3000"],
-      "secret": "__CUSTODIAN_CONSOLE_CLIENT_SECRET__",
+      "secret": "__VERISETTLE_CONSOLE_CLIENT_SECRET__",
       "protocolMappers": [
         {
           "name": "realm-roles-to-id-token",
@@ -71,7 +71,7 @@
     {
       "username": "ap.clerk.demo",
       "enabled": true,
-      "email": "ap.clerk.demo@custodian.local",
+      "email": "ap.clerk.demo@verisettle.local",
       "emailVerified": true,
       "firstName": "Ana",
       "lastName": "Reyes",
@@ -82,7 +82,7 @@
     {
       "username": "controller.demo",
       "enabled": true,
-      "email": "controller.demo@custodian.local",
+      "email": "controller.demo@verisettle.local",
       "emailVerified": true,
       "firstName": "Priya",
       "lastName": "Natarajan",
@@ -93,7 +93,7 @@
     {
       "username": "cfo.demo",
       "enabled": true,
-      "email": "cfo.demo@custodian.local",
+      "email": "cfo.demo@verisettle.local",
       "emailVerified": true,
       "firstName": "Marcus",
       "lastName": "Chen",

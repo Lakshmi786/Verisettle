@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Provisions the 'custodian' Infisical project, one Universal Auth machine
-identity per Custodian service, and pushes the real bootstrap secrets
+"""Provisions the 'verisettle' Infisical project, one Universal Auth machine
+identity per VeriSettle service, and pushes the real bootstrap secrets
 (provider API keys, per-service Postgres passwords) into it - all via the
 REST API using the instance-admin token from .infisical-bootstrap.json.
 
@@ -18,8 +18,8 @@ DOMAIN = "http://localhost:8443"
 
 SERVICES = [
     "litellm", "mlflow", "langfuse",
-    "custodian-backend", "custodian-ledger", "custodian-data-loader",
-    "custodian-payment-execution",
+    "verisettle-backend", "verisettle-ledger", "verisettle-data-loader",
+    "verisettle-payment-execution",
 ]
 
 
@@ -61,12 +61,12 @@ def main():
     env = load_env()
 
     projects = api("GET", "/api/v1/projects", admin_token)
-    project = next((p for p in projects.get("projects", []) if p["name"] == "custodian"), None)
+    project = next((p for p in projects.get("projects", []) if p["name"] == "verisettle"), None)
     if project is None:
-        project = api("POST", "/api/v1/projects", admin_token, {"projectName": "custodian", "type": "secret-manager"})["project"]
-        print(f"created project custodian ({project['id']})")
+        project = api("POST", "/api/v1/projects", admin_token, {"projectName": "verisettle", "type": "secret-manager"})["project"]
+        print(f"created project verisettle ({project['id']})")
     else:
-        print(f"project custodian already exists ({project['id']})")
+        print(f"project verisettle already exists ({project['id']})")
     project_id = project["id"]
 
     memberships = api("GET", f"/api/v1/projects/{project_id}/identity-memberships", admin_token)
@@ -74,7 +74,7 @@ def main():
 
     created = []
     for svc in SERVICES:
-        name = f"custodian-{svc}" if not svc.startswith("custodian-") else svc
+        name = f"verisettle-{svc}" if not svc.startswith("verisettle-") else svc
         if name in existing_names:
             print(f"identity {name} already exists in project, skipping")
             continue
@@ -104,16 +104,16 @@ def main():
             json.dump(created, f, indent=2)
         print(f"wrote {len(created)} new identity credentials to {out_path} (gitignored)")
 
-    # custodian-payment-execution is the one identity actually consumed by
+    # verisettle-payment-execution is the one identity actually consumed by
     # name at runtime (services/backend/app/ledger_client.py) - print its
     # real values as ready-to-paste .env lines instead of leaving them
     # buried in the JSON dump above.
-    payment_exec = next((c for c in created if c["service"] == "custodian-payment-execution"), None)
+    payment_exec = next((c for c in created if c["service"] == "verisettle-payment-execution"), None)
     if payment_exec is None:
         m = next((m for m in memberships.get("identityMemberships", [])
-                   if m["identity"]["name"] == "custodian-payment-execution"), None)
+                   if m["identity"]["name"] == "verisettle-payment-execution"), None)
         if m is not None:
-            print("custodian-payment-execution identity already existed - its clientSecret was only "
+            print("verisettle-payment-execution identity already existed - its clientSecret was only "
                   "shown once, at creation time. If .env's PAYMENT_EXECUTION_CLIENT_ID/SECRET are "
                   "missing or stale, delete this identity in Infisical and re-run this script.")
     print()
@@ -136,8 +136,8 @@ def main():
         "PGPASS_LITELLM": env["PGPASS_LITELLM"],
         "PGPASS_MLFLOW": env["PGPASS_MLFLOW"],
         "PGPASS_LANGFUSE": env["PGPASS_LANGFUSE"],
-        "PGPASS_CUSTODIAN_LEDGER": env["PGPASS_CUSTODIAN_LEDGER"],
-        "PGPASS_CUSTODIAN_BACKEND": env["PGPASS_CUSTODIAN_BACKEND"],
+        "PGPASS_VERISETTLE_LEDGER": env["PGPASS_VERISETTLE_LEDGER"],
+        "PGPASS_VERISETTLE_BACKEND": env["PGPASS_VERISETTLE_BACKEND"],
         # The one secret services/backend/app/ledger_client.py actually
         # fetches from Infisical at runtime (Payment-Execution's Universal
         # Auth identity reads this fresh before every ledger call).

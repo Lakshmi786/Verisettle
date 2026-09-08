@@ -37,7 +37,7 @@ def run(state: InvoiceRunState) -> InvoiceRunState:
 
     # Above the routine-amount threshold uses the reasoning-tier model;
     # routine amounts use the fast/cheap route.
-    model = "custodian-reasoning" if amount > ROUTINE_AMOUNT_THRESHOLD else "custodian-routine"
+    model = "verisettle-reasoning" if amount > ROUTINE_AMOUNT_THRESHOLD else "verisettle-routine"
 
     # Real lookup against the ledger's vendor history, not a client-supplied
     # flag: vendor_first_seen is a fraud-relevant signal the dual-approval
@@ -58,7 +58,7 @@ def run(state: InvoiceRunState) -> InvoiceRunState:
     # gpt-5.6-sol rejects function-tool calls with reasoning_effort != "none";
     # the Groq gpt-oss route needs "low" to leave room in max_tokens after
     # its reasoning trace.
-    reasoning_effort = "none" if model == "custodian-reasoning" else "low"
+    reasoning_effort = "none" if model == "verisettle-reasoning" else "low"
 
     client = get_client("risk-scoring")
     with llm_span("risk-scoring", model) as record_usage:

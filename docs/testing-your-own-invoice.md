@@ -11,8 +11,8 @@ sandboxed OCR worker first). This covers the image path.
 3. Click **Submit**.
 
 What actually happens: the browser uploads the image to the Console's own
-server, which forwards it to `custodian-backend`. Backend writes it to a
-shared volume, calls `custodian-sandbox-runner`'s real `/ocr` endpoint (which
+server, which forwards it to `verisettle-backend`. Backend writes it to a
+shared volume, calls `verisettle-sandbox-runner`'s real `/ocr` endpoint (which
 spins up a fresh, network-isolated, non-root container with no Linux
 capabilities to run real `pytesseract` OCR on it - and inside that
 container, a real, kernel-enforced Landlock ruleset restricts the OCR code
@@ -46,7 +46,7 @@ placeholder font, which breaks OCR accuracy (this was a real bug found
 while building these samples):
 ```sh
 docker run --rm -v "$(pwd)/docs/sample-invoices:/out" \
-  --entrypoint python3 custodian-sandbox-ocr:latest /out/generate.py
+  --entrypoint python3 verisettle-sandbox-ocr:latest /out/generate.py
 ```
 
 | File | What it's testing | What you should see |

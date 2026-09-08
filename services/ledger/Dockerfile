@@ -17,7 +17,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /workspace
 COPY pyproject.toml uv.lock ./
 COPY services/ledger/pyproject.toml services/ledger/
-RUN uv sync --frozen --no-dev --package custodian-ledger
+RUN uv sync --frozen --no-dev --package verisettle-ledger
 
 WORKDIR /app
 ENV PATH="/opt/venv/bin:$PATH" \

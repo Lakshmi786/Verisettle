@@ -11,7 +11,7 @@ even though the render looks fine to the eye. The container has the real
 font and is what these images are actually tested against anyway:
 
   docker run --rm -v "$(pwd)/docs/sample-invoices:/out" \
-    --entrypoint python3 custodian-sandbox-ocr:latest /out/generate.py
+    --entrypoint python3 verisettle-sandbox-ocr:latest /out/generate.py
 """
 import os
 from PIL import Image, ImageDraw, ImageFont

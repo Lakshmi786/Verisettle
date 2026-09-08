@@ -1,7 +1,7 @@
 """The only component with a bind-mounted docker.sock. Spins up a fresh
 container per untrusted document parse: --rm, --network none, read-only
 root, non-root, all capabilities dropped, hard resource/time limits.
-custodian-sandbox-ocr itself adds one more real layer inside that container
+verisettle-sandbox-ocr itself adds one more real layer inside that container
 (a kernel-enforced Landlock ruleset via agt-sandbox's NonoSandboxProvider)
 before it touches the actual image. Spawning a sandbox is itself authorized
 via policy-service.
@@ -19,12 +19,12 @@ import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI(title="custodian-sandbox-runner", version="1.0.0")
+app = FastAPI(title="verisettle-sandbox-runner", version="1.0.0")
 client = docker.from_env()
 
 POLICY_SERVICE_URL = os.environ.get("POLICY_SERVICE_URL", "http://policy-service:8000")
-SANDBOX_IMAGE = os.environ.get("SANDBOX_IMAGE", "custodian-sandbox-ocr:latest")
-INVOICE_IMAGES_VOLUME = os.environ.get("INVOICE_IMAGES_VOLUME", "custodian_invoice-images")
+SANDBOX_IMAGE = os.environ.get("SANDBOX_IMAGE", "verisettle-sandbox-ocr:latest")
+INVOICE_IMAGES_VOLUME = os.environ.get("INVOICE_IMAGES_VOLUME", "verisettle_invoice-images")
 HARD_TIMEOUT_SECONDS = 30
 
 
@@ -64,7 +64,7 @@ def run_ocr(req: OcrRequest):
     relative_path = os.path.relpath(req.image_path, "/data/invoices")
 
     execution_id = str(uuid.uuid4())
-    scratch_volume_name = f"custodian-sandbox-scratch-{execution_id[:12]}"
+    scratch_volume_name = f"verisettle-sandbox-scratch-{execution_id[:12]}"
     scratch_volume = client.volumes.create(name=scratch_volume_name)
     started_at = time.time()
 
@@ -81,7 +81,7 @@ def run_ocr(req: OcrRequest):
 
         container = client.containers.run(
             SANDBOX_IMAGE,
-            name=f"custodian-sandbox-{execution_id[:8]}",
+            name=f"verisettle-sandbox-{execution_id[:8]}",
             environment={"INPUT_PATH": f"/input/{relative_path}"},
             remove=True,
             detach=True,

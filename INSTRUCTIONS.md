@@ -1,4 +1,4 @@
-# Build Prompt for Claude Code — "Custodian": A Governed Multi-Agent Finance Operations Platform
+# Build Prompt for Claude Code — "VeriSettle": A Governed Multi-Agent Finance Operations Platform
 
 Give this entire file to Claude Code as the first message in an empty
 repository. It is a complete, self-contained build specification — follow
@@ -12,7 +12,7 @@ it from scratch.
 
 ## 1. What you are building
 
-**Custodian** is a multi-agent AI system that runs part of an enterprise's
+**VeriSettle** is a multi-agent AI system that runs part of an enterprise's
 finance back-office autonomously: it reads incoming invoices, extracts and
 verifies their data, scores them for fraud/anomaly risk, decides whether to
 auto-approve or escalate to a human, and executes vendor payments through an
@@ -107,8 +107,8 @@ Runtime, Operations.** Compliance Governance is explicitly out of scope.
 All three routed through a single self-hosted **LLM gateway** (LiteLLM) —
 no agent code calls a provider SDK directly. This is what makes budget
 caps, fallback, and per-agent routing actually enforceable. Define three
-named model routes on the gateway (`custodian-reasoning`,
-`custodian-routine`, `custodian-guardrail`) mapping to the three rows
+named model routes on the gateway (`verisettle-reasoning`,
+`verisettle-routine`, `verisettle-guardrail`) mapping to the three rows
 above — agent code always requests a route name, never a raw provider model
 ID.
 
@@ -149,7 +149,7 @@ Makefile                    the developer entry point - `make help` lists every 
 INSTRUCTIONS.md              this file
 README.md                    section 8
 CREDENTIALS.md                gitignored - optional local listing of THIS machine's generated credentials
-SECRETS GEN GUIDE.md          the exact openssl/python one-liners behind every placeholder in .env.example
+SECRETS GEN GUIDE.md          the exact openssl/python one-liners behind every generated secret
 ```
 
 Split `infra/compose/` into **six files**, one per governance layer, each
@@ -200,13 +200,13 @@ sequence is fully automatic.
   to an approval-authority tier.
 - **SPIFFE/SPIRE** — short-lived cryptographic identity. Register 6 SPIRE
   entries: one per agent (Extraction, Risk-Scoring, Approval,
-  Payment-Execution), one for the `custodian-backend` process itself, and
+  Payment-Execution), one for the `verisettle-backend` process itself, and
   one test/verification entry — each with a 1-hour X.509-SVID TTL. **Design
   decision, made deliberately up front:** SPIRE attests one identity per
   connecting OS process, and the 4 agents run as function calls inside one
-  `custodian-backend` process, not as 4 separate workloads — so only the
-  process-level entry (`spiffe://<trust-domain>/service/custodian-backend`)
-  is genuinely fetched and enforced. `custodian-backend` must fetch a real
+  `verisettle-backend` process, not as 4 separate workloads — so only the
+  process-level entry (`spiffe://<trust-domain>/service/verisettle-backend`)
+  is genuinely fetched and enforced. `verisettle-backend` must fetch a real
   X.509 SVID from the SPIRE Workload API **at process import time, not
   inside a request handler or startup hook** — a failure to get an identity
   must crash the container before it can ever serve a request falsely
@@ -325,8 +325,8 @@ sequence is fully automatic.
   bank account") — write the policy text it checks against to cover both,
   don't scope it to injection alone.
 - **Sandboxed execution for untrusted document parsing** (OCR on incoming
-  invoice images): a fresh container per execution (`custodian-sandbox-ocr`,
-  built separately — `custodian-sandbox-runner` launches it dynamically by
+  invoice images): a fresh container per execution (`verisettle-sandbox-ocr`,
+  built separately — `verisettle-sandbox-runner` launches it dynamically by
   name per call, it is not a long-running compose service), `--rm`,
   `--network none`, read-only root filesystem except a scratch dir,
   non-root user, `--cap-drop=ALL`, hard CPU/memory/pid limits, a hard
@@ -425,14 +425,14 @@ sequence is fully automatic.
   get a valid credential — never silently continue without one.
 - **Watchdog heartbeats** — every agent node emits a heartbeat (thread
   ID + agent name + timestamp) on each step, into a real Postgres table.
-  A background loop in `custodian-control-plane` flags a stalled agent
+  A background loop in `verisettle-control-plane` flags a stalled agent
   independently of cost/rate/policy signals. **Design the staleness check
   per logical run (thread), not per individual agent name within a run** —
   checking each agent's own last-seen timestamp independently produces
   false positives once a run legitimately moves on to its next agent and
   the previous agent's heartbeat naturally goes quiet; group by thread and
   compare against the most recent heartbeat across the whole run.
-- **Auto kill-switch triggers**, tripped by `custodian-control-plane`: a
+- **Auto kill-switch triggers**, tripped by `verisettle-control-plane`: a
   canary vendor/account no legitimate flow should ever touch; repeated
   policy denials from the same agent within a rolling window; a missed
   heartbeat (per the correct per-thread logic above). Build **graduated
@@ -462,11 +462,11 @@ sequence is fully automatic.
   watching it increment by exactly that much.
 - **Cost governance**: enforced via LiteLLM's per-key budget caps — a
   ceiling before the call goes out, not a number observed after.
-- **`custodian-control-plane`** — the kill switch service, independent of
+- **`verisettle-control-plane`** — the kill switch service, independent of
   the agent runtime process itself, so a malfunctioning agent can never be
   the one deciding whether it gets stopped. Every trip and reset is itself
   written to the audit log.
-- **Tamper-proof audit logging (`custodian-audit-log`)** — every
+- **Tamper-proof audit logging (`verisettle-audit-log`)** — every
   governance-relevant event (extraction, risk score, policy decision,
   human approval/denial, ledger execution, vendor-history update,
   kill-switch trip/reset) is a JSON entry embedding the SHA-256 hash of the
@@ -484,7 +484,7 @@ sequence is fully automatic.
   actual content, not just check that a key resolves.
 - **Continuous integrity watchdog** — `/verify` alone is only a
   point-in-time check: a tamper reverted before anyone happens to call it
-  leaves no trace. Run a background thread in `custodian-audit-log`
+  leaves no trace. Run a background thread in `verisettle-audit-log`
   (interval configurable via env var, default ~30s) that calls the same
   real check automatically, and the moment it finds a **new** break, writes
   that finding as its own normal entry into the same hash chain
@@ -503,12 +503,12 @@ sequence is fully automatic.
 
 ## 6. The application services
 
-- **`custodian-backend`** — Python, FastAPI, hosting the LangGraph agent
+- **`verisettle-backend`** — Python, FastAPI, hosting the LangGraph agent
   graph. Async throughout, Pydantic v2 on every request/response boundary.
   REST + WebSocket API so the frontend can watch a run live, step by step.
   Fetches its own SPIFFE identity at import time (5.1) before the FastAPI
   app object exists.
-- **`custodian-console`** — a Next.js dashboard:
+- **`verisettle-console`** — a Next.js dashboard:
   - **Live invoice pipeline view** — watch an invoice flow through each
     agent step in real time, with the policy decision at each point and
     why.
@@ -525,18 +525,18 @@ sequence is fully automatic.
     human-readable form.
   - **A submit page** supporting both pasted OCR text (fast, skips OCR) and
     a real image upload (goes through the real sandboxed OCR path).
-- **`custodian-ledger`** — the real internal ledger microservice from
+- **`verisettle-ledger`** — the real internal ledger microservice from
   Ground Rule 4: double-entry bookkeeping, real balance tracking, real
   validation (5.5's dry-run shares its validation code with the real
   commit), plus the `vendors`/`historical_payments` tables and endpoints
   from 5.5.
-- **`custodian-control-plane`** — kill switch + heartbeat watchdog, 5.5/5.6.
-- **`custodian-audit-log`** — the hash-chained log + continuous watchdog,
+- **`verisettle-control-plane`** — kill switch + heartbeat watchdog, 5.5/5.6.
+- **`verisettle-audit-log`** — the hash-chained log + continuous watchdog,
   5.6.
-- **`custodian-sandbox-runner`** — accepts an OCR request, launches a
-  fresh `custodian-sandbox-ocr` container per call with the Landlock/Docker
+- **`verisettle-sandbox-runner`** — accepts an OCR request, launches a
+  fresh `verisettle-sandbox-ocr` container per call with the Landlock/Docker
   restrictions from 5.5, returns the extracted text.
-- **`custodian-data-loader`** — a one-time (and safely re-runnable —
+- **`verisettle-data-loader`** — a one-time (and safely re-runnable —
   loading twice must not duplicate rows) seeding tool pulling the real
   SROIE/CORD invoice data and the real USAspending vendor/award slice, then
   running the Great Expectations checkpoint against what it loaded (5.2).
@@ -550,10 +550,11 @@ Git Bash on Windows works identically to Linux/macOS) — the first-run
 sequence in the README (section 8) is built entirely out of calling these
 in order:
 
-- **`generate-env.sh`** — writes `.env` from the `.env.example` template,
-  substituting a fresh `openssl rand -hex n` value for every placeholder.
-  Refuses to overwrite an existing `.env` unless `FORCE=1`, because those
-  secrets are baked into already-initialised data volumes.
+- **`generate-env.sh`** — writes `.env`, substituting a fresh
+  `openssl rand -hex n` value for every secret. It carries the env layout
+  itself; there is no template file. Refuses to overwrite an existing
+  `.env` unless `FORCE=1`, because those secrets are baked into
+  already-initialised data volumes.
 - **`compose.sh`** — thin wrapper applying all six `-f` compose-file flags.
 - **`render-keycloak-realm.sh`** — fills a Keycloak realm template with real
   values from `.env` before Keycloak starts.
@@ -578,24 +579,24 @@ in order:
   sensitive in the OpenMetadata catalog.
 - **`validate-cedar-policies.py`** — the real policy validator from 5.4.
 
-`.env.example` is a **committed template containing no real values**. Every
-local-only secret is a `__RAND_HEX_n__` placeholder naming the exact
-`openssl rand -hex n` call that produces it; `generate-env.sh` substitutes
-each one with a fresh value to write `.env`. Only two lines need a real
-value from the user (`OPENAI_API_KEY`, `GROQ_API_KEY`), and every field a
-bootstrap script fills in later is marked with a clear
-`# [AUTO-FILLED] by <script>` comment and left blank.
+**There is no `.env.example` in this repo, deliberately.** The variable
+layout lives inside `generate-env.sh`, which emits a complete `.env` with a
+freshly generated value for every local-only secret. Only two lines need a
+real value from the user (`OPENAI_API_KEY`, `GROQ_API_KEY`), and every field
+a bootstrap script fills in later is left blank above an
+`# [AUTO-FILLED] by <script>` comment.
 
 **This is a deliberate revision of the original instruction**, which called
-for `.env.example` to ship with real working values baked in on the grounds
+for a committed `.env.example` carrying real working values on the grounds
 that nothing here is reachable from outside the machine. That reasoning
-holds for a repo that never leaves the machine — but this one is published,
-and committed credentials in public git history stay there permanently even
-after a later cleanup. Generating them on first run costs one command and
-gives every clone its own distinct secrets, which is strictly better than
-every clone sharing one set. `SECRETS GEN GUIDE.md` remains the
-documentation of what each call is and why each length was chosen; it is
-committed for the same reason (it contains commands, not values).
+holds for a repo that never leaves the machine; this one is published, and
+a committed env file — even a placeholder one — is the single most common
+way real credentials reach a public repo by accident, because the moment a
+value is pasted in for convenience it is already tracked. Generating on
+first run costs one command, gives every clone its own distinct secrets,
+and removes the template-drift problem entirely. `SECRETS GEN GUIDE.md`
+remains the documentation of what each call is and why each length was
+chosen; it is committed because it contains commands, not values.
 `CREDENTIALS.md` — a listing of one machine's actual generated values — is
 gitignored.
 
@@ -661,7 +662,7 @@ Must include, in this order:
    run).
 4. **A complete service table** — every running service, its local URL,
    and the username/password the setup itself creates (Keycloak admin
-   console, Grafana, Langfuse, MinIO console, MLflow UI, the Custodian
+   console, Grafana, Langfuse, MinIO console, MLflow UI, the VeriSettle
    Console itself, everything reachable in a browser). Mark these clearly
    as local-development-only credentials.
 5. **A "confirm everything is up" step** — a real, runnable command that

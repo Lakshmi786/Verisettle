@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       : {
           scope: body.scope,
           target: body.target,
-          reason: body.reason ?? "tripped from custodian-console",
+          reason: body.reason ?? "tripped from verisettle-console",
           triggered_by: session.user?.email ?? session.user?.name,
         };
 

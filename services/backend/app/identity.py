@@ -6,7 +6,7 @@ fallback (a quality concern), a missing identity here is a security boundary,
 so there is no fallback - a startup crash is the correct, visible failure
 mode, not a silent downgrade.
 
-This is the real identity of the custodian-backend *process*, not of an
+This is the real identity of the verisettle-backend *process*, not of an
 individual agent - see register-spire-entries.sh for why the 4 per-agent
 SPIRE entries can never actually be issued to it (SPIRE attests one identity
 per workload; all 4 agents run as function calls inside this one process).

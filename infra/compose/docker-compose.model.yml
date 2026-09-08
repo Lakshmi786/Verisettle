@@ -1,9 +1,9 @@
-name: custodian
+name: verisettle
 
 networks:
-  custodian-net:
+  verisettle-net:
     external: true
-    name: custodian-net
+    name: verisettle-net
 
 volumes:
   litellm-redis-data:
@@ -11,13 +11,13 @@ volumes:
 services:
   litellm-redis:
     image: redis:8.2-alpine
-    container_name: custodian-litellm-redis
+    container_name: verisettle-litellm-redis
     restart: unless-stopped
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     volumes:
       - litellm-redis-data:/data
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -31,7 +31,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm-database:v1.95.0
-    container_name: custodian-litellm
+    container_name: verisettle-litellm
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -49,7 +49,7 @@ services:
       litellm-redis:
         condition: service_healthy
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4000/health/liveliness')"]
       interval: 15s
@@ -64,7 +64,7 @@ services:
 
   mlflow:
     build: ../mlflow
-    container_name: custodian-mlflow
+    container_name: verisettle-mlflow
     restart: unless-stopped
     environment:
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
@@ -93,7 +93,7 @@ services:
     ports:
       - "127.0.0.1:5500:5000"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:5000/health')"]
       interval: 15s
@@ -108,7 +108,7 @@ services:
 
   deepeval-gate:
     build: ../deepeval
-    container_name: custodian-deepeval-gate
+    container_name: verisettle-deepeval-gate
     restart: "no"
     # One-shot job (Step 4) that makes real, paid LLM calls - excluded from
     # a bare `compose.sh up -d` (Step 6) so it isn't silently and needlessly
@@ -121,10 +121,10 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
       PROMOTION_THRESHOLD: "0.6"
     networks:
-      - custodian-net
+      - verisettle-net
     deploy:
       resources:
         limits:

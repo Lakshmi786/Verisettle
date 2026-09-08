@@ -1,9 +1,9 @@
-name: custodian
+name: verisettle
 
 networks:
-  custodian-net:
+  verisettle-net:
     external: true
-    name: custodian-net
+    name: verisettle-net
 
 volumes:
   postgres-data:
@@ -12,7 +12,7 @@ volumes:
 services:
   postgres:
     image: postgres:18.4-alpine
-    container_name: custodian-postgres
+    container_name: verisettle-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_SUPERUSER}
@@ -23,15 +23,15 @@ services:
       PGPASS_LITELLM: ${PGPASS_LITELLM}
       PGPASS_MLFLOW: ${PGPASS_MLFLOW}
       PGPASS_LANGFUSE: ${PGPASS_LANGFUSE}
-      PGPASS_CUSTODIAN_LEDGER: ${PGPASS_CUSTODIAN_LEDGER}
-      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_VERISETTLE_LEDGER: ${PGPASS_VERISETTLE_LEDGER}
+      PGPASS_VERISETTLE_BACKEND: ${PGPASS_VERISETTLE_BACKEND}
     volumes:
       - postgres-data:/var/lib/postgresql
       - ../postgres-init:/docker-entrypoint-initdb.d:ro
     ports:
       - "127.0.0.1:5432:5432"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 10s
@@ -46,7 +46,7 @@ services:
 
   minio:
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: custodian-minio
+    container_name: verisettle-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -58,7 +58,7 @@ services:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
     networks:
-      - custodian-net
+      - verisettle-net
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 10s
@@ -73,12 +73,12 @@ services:
 
   minio-init:
     image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
-    container_name: custodian-minio-init
+    container_name: verisettle-minio-init
     depends_on:
       minio:
         condition: service_healthy
     networks:
-      - custodian-net
+      - verisettle-net
     restart: "no"
     entrypoint: ["/bin/sh", "/init/init-buckets.sh"]
     environment:

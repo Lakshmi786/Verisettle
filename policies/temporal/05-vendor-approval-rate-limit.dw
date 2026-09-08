@@ -11,15 +11,15 @@
 // `exists (n: Long). ((count for (t: Timepoint). where (...)) == n && n > k)`
 // are all patterns taken from that real, passing example.
 forbid (
-    principal is Custodian::Agent,
-    action == Custodian::Action::"ApprovePayment",
-    resource is Custodian::Payment
+    principal is VeriSettle::Agent,
+    action == VeriSettle::Action::"ApprovePayment",
+    resource is VeriSettle::Payment
 )
 when temporal {
-    formerly within 24h Custodian::Action::"ApprovePayment"::request{ input.vendor: context.input.vendor }
+    formerly within 24h VeriSettle::Action::"ApprovePayment"::request{ input.vendor: context.input.vendor }
     && exists (n: Long). (
         (count for (t: Timepoint).
-            where (Custodian::Action::"ApprovePayment"::response{ input.vendor: context.input.vendor } && tp(t))
+            where (VeriSettle::Action::"ApprovePayment"::response{ input.vendor: context.input.vendor } && tp(t))
         ) == n
         && n >= 3
     )

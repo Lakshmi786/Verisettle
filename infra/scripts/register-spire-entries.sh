@@ -7,10 +7,10 @@
 # identity - no valid label match, no SVID, no action.
 set -eu
 
-CONTAINER=custodian-spire-server
+CONTAINER=verisettle-spire-server
 BIN=/opt/spire/bin/spire-server
 SOCK=/run/spire/data/api.sock
-TD=custodian.local
+TD=verisettle.local
 PARENT="spiffe://${TD}/agent/docker-agent"
 
 register() {
@@ -25,18 +25,18 @@ register() {
     || true
 }
 
-register "agent/extraction"        "docker:label:custodian.agent:extraction"
-register "agent/risk-scoring"      "docker:label:custodian.agent:risk-scoring"
-register "agent/approval"          "docker:label:custodian.agent:approval"
-register "agent/payment-execution" "docker:label:custodian.agent:payment-execution"
+register "agent/extraction"        "docker:label:verisettle.agent:extraction"
+register "agent/risk-scoring"      "docker:label:verisettle.agent:risk-scoring"
+register "agent/approval"          "docker:label:verisettle.agent:approval"
+register "agent/payment-execution" "docker:label:verisettle.agent:payment-execution"
 
-# custodian-backend runs all 4 agents above as in-process function calls, not
+# verisettle-backend runs all 4 agents above as in-process function calls, not
 # as 4 separate workloads - SPIRE attests one identity per process, so those
 # 4 entries can never actually be issued to it. This 5th entry is the one
 # that's real and actually used: the backend process's own identity, fetched
 # at startup via the Workload API (app/identity.py) and required before it
 # will serve any request.
-register "service/custodian-backend" "docker:label:custodian.service:backend"
+register "service/verisettle-backend" "docker:label:verisettle.service:backend"
 
 # Verification-only entry: matched by unix uid instead of a docker label, so
 # Phase 1 can prove real SVID issuance without also having to solve

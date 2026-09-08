@@ -20,7 +20,7 @@ from ..schemas import ExtractedInvoice, InvoiceRunState
 from ..tracing import llm_span
 
 MLFLOW_URL = os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow:5000")
-PROMPT_REGISTRY_NAME = "custodian-extraction-prompt"
+PROMPT_REGISTRY_NAME = "verisettle-extraction-prompt"
 
 # Used only if MLflow has no "production"-aliased prompt yet (eval_gate.py
 # hasn't run) or is unreachable at startup - the extraction agent must still
@@ -79,10 +79,10 @@ def run(state: InvoiceRunState) -> InvoiceRunState:
         return state
 
     client = get_client("extraction")
-    with llm_span("extraction", "custodian-routine") as record_usage:
+    with llm_span("extraction", "verisettle-routine") as record_usage:
         result: ExtractedInvoice
         result, completion = client.chat.completions.create_with_completion(
-            model="custodian-routine",
+            model="verisettle-routine",
             response_model=ExtractedInvoice,
             # .replace, not .format: the real MLflow-registered production
             # prompt contains a literal JSON example with {"vendor": ...}

@@ -2,7 +2,7 @@
 # One-time, re-runnable bootstrap for the self-hosted Infisical instance:
 #   1. Creates the instance admin (org + user + instance-admin machine
 #      identity) via `infisical bootstrap` - no manual signup UI needed.
-#   2. Creates one Universal Auth machine identity per Custodian service.
+#   2. Creates one Universal Auth machine identity per VeriSettle service.
 #   3. Pushes the two real provider API keys and the per-service Postgres
 #      passwords into an Infisical project, so every later service reads its
 #      credentials from Infisical instead of a plaintext compose env block.
@@ -10,7 +10,7 @@
 set -eu
 
 cd "$(dirname "$0")/../.."
-[ -f .env ] || { echo ".env not found - copy .env.example to .env first" >&2; exit 1; }
+[ -f .env ] || { echo ".env not found - run: make env" >&2; exit 1; }
 set -a
 . ./.env
 set +a
@@ -21,7 +21,7 @@ if [ "${OPENAI_API_KEY}" = "sk-replace-me" ] || [ "${GROQ_API_KEY}" = "gsk-repla
 fi
 
 DOMAIN="http://localhost:8443"
-PROJECT_NAME="custodian"
+PROJECT_NAME="verisettle"
 STATE_FILE=".infisical-bootstrap.json"
 
 if [ -f "$STATE_FILE" ]; then

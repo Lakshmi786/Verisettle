@@ -17,8 +17,8 @@ PGPASS_INFISICAL
 PGPASS_LITELLM
 PGPASS_MLFLOW
 PGPASS_LANGFUSE
-PGPASS_CUSTODIAN_LEDGER
-PGPASS_CUSTODIAN_BACKEND
+PGPASS_VERISETTLE_LEDGER
+PGPASS_VERISETTLE_BACKEND
 MINIO_ROOT_PASSWORD
 INFISICAL_ENCRYPTION_KEY
 INFISICAL_AUTH_SECRET
@@ -86,8 +86,8 @@ These use a fixed literal prefix followed by `openssl rand -hex N`, glued togeth
 
 | Variable                           | Command                                              |
 | ---------------------------------- | ---------------------------------------------------- |
-| `MINIO_ROOT_USER`                  | `echo "custodian_admin_$(openssl rand -hex 4)"`      |
-| `LITELLM_MASTER_KEY`               | `echo "sk-custodian-master-$(openssl rand -hex 16)"` |
+| `MINIO_ROOT_USER`                  | `echo "verisettle_admin_$(openssl rand -hex 4)"`      |
+| `LITELLM_MASTER_KEY`               | `echo "sk-verisettle-master-$(openssl rand -hex 16)"` |
 | `LEDGER_API_KEY`                   | `echo "ldg-$(openssl rand -hex 16)"`                 |
 | `VENDOR_LOOKUP_API_KEY`            | `echo "vlk-$(openssl rand -hex 16)"`                 |
 | `LANGFUSE_INIT_PROJECT_PUBLIC_KEY` | `echo "pk-lf-$(openssl rand -hex 16)"`               |

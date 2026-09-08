@@ -18,7 +18,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /workspace
 COPY pyproject.toml uv.lock ./
 COPY services/data-loader/pyproject.toml services/data-loader/
-RUN uv sync --frozen --no-dev --package custodian-data-loader
+RUN uv sync --frozen --no-dev --package verisettle-data-loader
 
 WORKDIR /app
 ENV PATH="/opt/venv/bin:$PATH" \

@@ -28,7 +28,7 @@ class CedarEngine:
         self.policy_set = cedarpy.PolicySet.from_str(self.policy_text)
 
     def authorize(self, principal: dict, action: str, resource: dict, context: dict) -> dict:
-        entity_uid = lambda e: f"Custodian::{e['type']}::\"{e['id']}\""
+        entity_uid = lambda e: f"VeriSettle::{e['type']}::\"{e['id']}\""
 
         # Cedar's "Long" is a 64-bit integer, not a decimal - round dollar
         # amounts for policy evaluation (thresholds are whole-dollar anyway).
@@ -37,16 +37,16 @@ class CedarEngine:
             resource_attrs["amount"] = round(resource_attrs["amount"])
 
         entities = [
-            {"uid": {"type": f"Custodian::{principal['type']}", "id": principal["id"]},
+            {"uid": {"type": f"VeriSettle::{principal['type']}", "id": principal["id"]},
              "attrs": principal.get("attrs", {}), "parents": []},
-            {"uid": {"type": f"Custodian::{resource['type']}", "id": resource["id"]},
+            {"uid": {"type": f"VeriSettle::{resource['type']}", "id": resource["id"]},
              "attrs": resource_attrs, "parents": []},
         ]
 
         result = cedarpy.is_authorized(
             {
                 "principal": entity_uid(principal),
-                "action": f"Custodian::Action::\"{action}\"",
+                "action": f"VeriSettle::Action::\"{action}\"",
                 "resource": entity_uid(resource),
                 "context": context,
             },

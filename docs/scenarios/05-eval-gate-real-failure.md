@@ -6,7 +6,7 @@
 
 This uses the same run as scenario 04 (it grades two prompt versions in one pass). Check the second version:
 ```sh
-curl "http://localhost:5500/api/2.0/mlflow/model-versions/get?name=custodian-extraction-prompt&version=2"
+curl "http://localhost:5500/api/2.0/mlflow/model-versions/get?name=verisettle-extraction-prompt&version=2"
 ```
 
 ## What you'll see

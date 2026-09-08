@@ -6,7 +6,7 @@ transaction gets caught there, before it's ever real.
 
 ## Steps
 
-Called directly against `custodian-ledger` (same real endpoint the agent
+Called directly against `verisettle-ledger` (same real endpoint the agent
 pipeline calls internally) to isolate the ledger's own guarantees from the
 AI layer:
 

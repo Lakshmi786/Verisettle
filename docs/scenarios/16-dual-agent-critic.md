@@ -10,10 +10,10 @@ agent was.
 
 `approval.py` runs two separate AI calls, not one:
 
-1. **Approval** (OpenAI, `custodian-reasoning`) decides `auto_approve` /
+1. **Approval** (OpenAI, `verisettle-reasoning`) decides `auto_approve` /
    `escalate_to_human` / `reject`, with its own confidence score.
 2. Only if that decision is `auto_approve` **and** confident enough, a second
-   call goes out to **Critic** (Groq, `custodian-routine` — a genuinely
+   call goes out to **Critic** (Groq, `verisettle-routine` — a genuinely
    different model provider from a different company) with an adversarial
    prompt: *"you are an independent adversarial reviewer... does this
    decision look correct? Flag any concerns."* It sees the same evidence
@@ -69,7 +69,7 @@ curl -X POST http://localhost:8000/runs -H "Content-Type: application/json" -d '
 }'
 ```
 **Result:** the garbled name no longer string-matched the real vendor in
-`custodian-ledger`, so it was treated as a brand-new, unknown vendor —
+`verisettle-ledger`, so it was treated as a brand-new, unknown vendor —
 **Approval itself** escalated to a human before Critic ever ran: `"vendor is
 brand new... key invoice fields contain malformed or unusual characters."`
 

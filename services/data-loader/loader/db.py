@@ -14,11 +14,11 @@ def _connect(dbname: str, user: str, password: str):
 
 
 def backend_conn():
-    return _connect("custodian_backend", "custodian_backend", os.environ["PGPASS_CUSTODIAN_BACKEND"])
+    return _connect("verisettle_backend", "verisettle_backend", os.environ["PGPASS_VERISETTLE_BACKEND"])
 
 
 def ledger_conn():
-    return _connect("custodian_ledger", "custodian_ledger", os.environ["PGPASS_CUSTODIAN_LEDGER"])
+    return _connect("verisettle_ledger", "verisettle_ledger", os.environ["PGPASS_VERISETTLE_LEDGER"])
 
 
 INVOICES_SCHEMA = """

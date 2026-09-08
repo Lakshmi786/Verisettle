@@ -8,7 +8,7 @@
    ```sh
    curl -X POST http://localhost:4000/chat/completions \
      -H "Authorization: Bearer $LITELLM_KEY_AGENT_EXTRACTION" -H "Content-Type: application/json" \
-     -d '{"model":"custodian-reasoning","messages":[{"role":"user","content":"hi"}],"max_tokens":5}'
+     -d '{"model":"verisettle-reasoning","messages":[{"role":"user","content":"hi"}],"max_tokens":5}'
    ```
 
 2. Lower its budget below what it's already spent, then try a call it's normally allowed to make:
@@ -18,7 +18,7 @@
 
    curl -X POST http://localhost:4000/chat/completions \
      -H "Authorization: Bearer $LITELLM_KEY_AGENT_EXTRACTION" -H "Content-Type: application/json" \
-     -d '{"model":"custodian-routine","messages":[{"role":"user","content":"hi"}],"max_tokens":5}'
+     -d '{"model":"verisettle-routine","messages":[{"role":"user","content":"hi"}],"max_tokens":5}'
 
    # put the budget back
    curl -X POST http://localhost:4000/key/update -H "Authorization: Bearer $LITELLM_MASTER_KEY" -H "Content-Type: application/json" \

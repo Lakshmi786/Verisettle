@@ -4,8 +4,8 @@
 // the independent second check - a single policy misconfiguration here
 // must never alone grant a lower-tier agent write access to the ledger.
 forbid (
-    principal is Custodian::Agent,
-    action == Custodian::Action::"CreateLedgerEntry",
+    principal is VeriSettle::Agent,
+    action == VeriSettle::Action::"CreateLedgerEntry",
     resource
 )
 unless {
@@ -13,8 +13,8 @@ unless {
 };
 
 permit (
-    principal is Custodian::Agent,
-    action == Custodian::Action::"CreateLedgerEntry",
+    principal is VeriSettle::Agent,
+    action == VeriSettle::Action::"CreateLedgerEntry",
     resource
 )
 when {
