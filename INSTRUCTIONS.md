@@ -120,30 +120,36 @@ client, never free text parsed by hand.
 
 ## 4. Repository layout
 
-Build exactly this top-level structure — one folder per real, independently
-buildable service, plus shared infra:
+Build exactly this top-level structure — deployable services under
+`services/`, the browser app under `apps/`, shared infra under `infra/`.
+Every service remains independently buildable:
 
 ```
-custodian-backend/          FastAPI + LangGraph agent runtime (the 4 agents live here as graph nodes)
-custodian-console/          Next.js frontend
-custodian-ledger/           double-entry ledger microservice
-custodian-control-plane/    kill switch service
-custodian-audit-log/        tamper-proof hash-chained audit log service
-custodian-data-loader/      one-time (re-runnable) real-data seeding job
-custodian-sandbox-runner/   dispatches sandboxed OCR jobs
-custodian-sandbox-ocr/      the actual per-invocation sandboxed OCR image (built separately, not a compose service - see 5)
+services/backend/           FastAPI + LangGraph agent runtime (the 4 agents live here as graph nodes)
+services/ledger/            double-entry ledger microservice
+services/control-plane/     kill switch service
+services/audit-log/         tamper-proof hash-chained audit log service
+services/policy-service/    the Cedar+temporal-rules HTTP wrapper (Policy Decision Point)
+services/data-loader/       one-time (re-runnable) real-data seeding job
+services/sandbox-runner/    dispatches sandboxed OCR jobs
+services/sandbox-ocr/       the actual per-invocation sandboxed OCR image (built separately, not a compose service - see 5)
+apps/console/               Next.js frontend
 policies/                   Cedar (+ temporal/) policy source files, the real authorization source of truth
 docs/scenarios/             one markdown file per governance scenario (section 7)
 docs/sample-invoices/       a generator script producing real rendered PNG test invoices
 infra/compose/              docker-compose files, split by governance layer (see below)
 infra/scripts/              bootstrap/provisioning shell + Python scripts (see section 6)
-infra/policy-service/       the Cedar+temporal-rules HTTP wrapper (Policy Decision Point)
+infra/deepeval/             the one-shot prompt promotion gate (its own image and lock - see below)
 infra/keycloak/, infra/spire/, infra/litellm/, infra/mlflow/, infra/prometheus/, infra/grafana/, infra/minio-init/, infra/postgres-init/
                              per-tool config/provisioning files each of those services needs
+pyproject.toml              uv workspace root: shared dev tooling (ruff, mypy, pytest) and the member list
+uv.lock                     the single resolved lock file every workspace service builds from
+Makefile                    the developer entry point - `make help` lists every target
+.dockerignore               keeps the repo-root build context small and secret-free
 INSTRUCTIONS.md              this file
 README.md                    section 8
-CREDENTIALS.md                a plain listing of every local-dev credential and where it lives (not secret - see ground rule 3)
-SECRETS GEN GUIDE.md          the exact openssl/python one-liners used to generate every random secret in .env.example
+CREDENTIALS.md                gitignored - optional local listing of THIS machine's generated credentials
+SECRETS GEN GUIDE.md          the exact openssl/python one-liners behind every placeholder in .env.example
 ```
 
 Split `infra/compose/` into **six files**, one per governance layer, each
@@ -154,6 +160,35 @@ independently runnable on its own (`docker-compose.base.yml`,
 `-f` flags already applied, so day-to-day commands don't repeat them. Every
 layer must still work completely standalone — this is Ground Rule 5 applied
 to the compose layout itself.
+
+**Python packaging.** Every Python service declares its runtime
+dependencies in its own `pyproject.toml`; there are no `requirements.txt`
+files. The root `pyproject.toml` is a **uv workspace** whose members are the
+seven services that share one resolution, plus the shared dev-tool group
+(ruff, mypy, pytest) and their config. One `uv.lock` at the root is the
+single source of truth, and each service image builds with
+`uv sync --frozen --package <name>` from a repo-root build context so it
+installs exactly what the lock describes and nothing else.
+
+Two jobs are deliberately **outside** that workspace, each with its own
+`pyproject.toml` and `uv.lock` and its own local build context:
+
+- `services/sandbox-ocr` — the image that parses untrusted invoice
+  documents. Keeping it out of the shared resolution means nothing another
+  service pulls in can widen the dependency surface of the one process that
+  touches attacker-controlled input.
+- `infra/deepeval` — a genuine, tested conflict, not tidiness: deepeval
+  pins `click<8.4.0` while `huggingface-hub` (pulled in by the data loader)
+  requires `click>=8.4.0`. The two cannot share one resolution, so they
+  don't pretend to.
+
+**`Makefile`** is the developer entry point wrapping the scripts in section
+7 — `make help` lists every target. It does not hide logic: each target is
+a thin wrapper over the same commands the README documents. The first-run
+sequence is split into `bootstrap`, `bootstrap-data` and `bootstrap-finish`
+because two of the provisioning scripts print values a human must paste
+into `.env`; make stops at exactly those points rather than pretending the
+sequence is fully automatic.
 
 ---
 
@@ -262,7 +297,7 @@ to the compose layout itself.
 - **Dogwood's own reference interpreter is built for policy exploration,
   not production authorization** (its own maintainers document this) — do
   not shell out to it live. Instead, write a small, real Python module
-  (`temporal.py` inside the policy service) that enforces the `.dw` file's
+  (`temporal.py` inside `services/policy-service`) that enforces the `.dw` file's
   documented semantics directly against a real Postgres table of past
   decisions (every `/authorize` call, allow or deny, gets logged there
   first). The `.dw` file stays the authoritative spec; the Python module is
@@ -515,6 +550,10 @@ Git Bash on Windows works identically to Linux/macOS) — the first-run
 sequence in the README (section 8) is built entirely out of calling these
 in order:
 
+- **`generate-env.sh`** — writes `.env` from the `.env.example` template,
+  substituting a fresh `openssl rand -hex n` value for every placeholder.
+  Refuses to overwrite an existing `.env` unless `FORCE=1`, because those
+  secrets are baked into already-initialised data volumes.
 - **`compose.sh`** — thin wrapper applying all six `-f` compose-file flags.
 - **`render-keycloak-realm.sh`** — fills a Keycloak realm template with real
   values from `.env` before Keycloak starts.
@@ -539,15 +578,26 @@ in order:
   sensitive in the OpenMetadata catalog.
 - **`validate-cedar-policies.py`** — the real policy validator from 5.4.
 
-`.env.example` must ship with a real, working random value already filled
-in for every **local-only** secret (this is a teaching/demo repo — reusing
-baked-in local values is fine, nothing here is reachable from outside the
-machine), with only two lines requiring a real value from the user
-(`OPENAI_API_KEY`, `GROQ_API_KEY`), and every field a bootstrap script fills
-in later marked with a clear `# [AUTO-FILLED] by <script>` comment and left
-blank. `SECRETS GEN GUIDE.md` documents the exact `openssl`/equivalent
-one-liner used to generate each baked-in value, so they're regenerable, not
-mysterious.
+`.env.example` is a **committed template containing no real values**. Every
+local-only secret is a `__RAND_HEX_n__` placeholder naming the exact
+`openssl rand -hex n` call that produces it; `generate-env.sh` substitutes
+each one with a fresh value to write `.env`. Only two lines need a real
+value from the user (`OPENAI_API_KEY`, `GROQ_API_KEY`), and every field a
+bootstrap script fills in later is marked with a clear
+`# [AUTO-FILLED] by <script>` comment and left blank.
+
+**This is a deliberate revision of the original instruction**, which called
+for `.env.example` to ship with real working values baked in on the grounds
+that nothing here is reachable from outside the machine. That reasoning
+holds for a repo that never leaves the machine — but this one is published,
+and committed credentials in public git history stay there permanently even
+after a later cleanup. Generating them on first run costs one command and
+gives every clone its own distinct secrets, which is strictly better than
+every clone sharing one set. `SECRETS GEN GUIDE.md` remains the
+documentation of what each call is and why each length was chosen; it is
+committed for the same reason (it contains commands, not values).
+`CREDENTIALS.md` — a listing of one machine's actual generated values — is
+gitignored.
 
 ---
 

@@ -30,6 +30,14 @@ satisfies.
   then `wsl --shutdown` and restart Docker Desktop.
 - **Disk:** ~25GB free for images alone.
 - **CPU:** 6+ cores recommended (8 used throughout this build).
+- **`make`** — the developer entry point (`make help`). Present by default on
+  macOS and Linux; on Windows it ships with Git Bash's toolchain or via
+  `choco install make`. Every target is a thin wrapper over the same
+  commands documented below, so `make` is a convenience, never a
+  requirement.
+- **`uv`** — only needed to work on the Python code locally (`make sync`,
+  `make check`, `make lock`). Running the stack does not need it: the
+  service images install `uv` themselves. Install from https://docs.astral.sh/uv/.
 - A POSIX shell for the bootstrap scripts (`sh`) — Git Bash on Windows
   works; every script under `infra/scripts/` is plain `#!/bin/sh`.
 
@@ -46,10 +54,16 @@ or mocked model path.
   https://console.groq.com/keys.
 
 ```sh
-cp .env.example .env
+make env          # or: sh infra/scripts/generate-env.sh
 ```
-`.env.example` already has a real random value filled in for every
-local-only secret — open `.env` and change just these two lines:
+
+This writes `.env` from `.env.example`, generating a fresh, working random
+value for every local-only secret using the exact `openssl` calls documented
+in `SECRETS GEN GUIDE.md`. It refuses to overwrite an existing `.env`,
+because those secrets are baked into your Docker volumes once the stack has
+run — regenerating them would lock you out of your own database.
+
+Then open `.env` and change just these two lines:
 
 ```
 OPENAI_API_KEY=sk-...
@@ -61,10 +75,27 @@ already has a working value, or gets filled in automatically by a setup
 script later in §3.
 
 
+## 3. First run
+
+Every step below is also a `make` target. `make help` lists all of them.
+The short version, if you just want the sequence:
+
+```sh
+make bootstrap          # steps 0-2, stops so you can paste Infisical values into .env
+make bootstrap-data     # steps 3-4a, stops so you can paste the LiteLLM keys into .env
+make bootstrap-finish   # eval gate, policy validation, full stack, sandbox image
+```
+
+`make` stops at exactly the two points where a provisioning script prints
+values a human has to paste into `.env` — it does not pretend that part is
+automatic. The long form below explains what each step actually does, and
+every step remains individually re-runnable (`make step3`, `make step5`, …).
+
 ### Step 0 — one-time setup
 ```sh
 docker network create custodian-net
 ```
+`make step0` does this step and the next one together.
 Creates a private virtual network inside Docker so all the Custodian containers can find and talk to each other by name 
 
 ---
@@ -80,7 +111,7 @@ Fills in the Keycloak login system's config file with real passwords from your .
 ### Step 1 — Foundations (shared database + file storage)
 
 ```sh
-sh infra/scripts/compose.sh up -d postgres minio
+sh infra/scripts/compose.sh up -d postgres minio     # or: make step1
 ```
 
 Starts the shared database (Postgres) and file storage (MinIO) in the background
@@ -92,6 +123,8 @@ Starts the shared database (Postgres) and file storage (MinIO) in the background
 ```sh
 sh infra/scripts/compose.sh up -d keycloak spire-server infisical-redis infisical
 ```
+
+All of Step 2 is `make step2`.
 
 Starts the login system (Keycloak), the identity-issuing service (SPIRE), and the secrets vault (Infisical) in the background.
 
@@ -130,6 +163,8 @@ First command creates the vault's admin account. Second command creates a login 
 ```sh
 sh infra/scripts/compose.sh up -d om-postgres om-elasticsearch om-migrate om-server om-ingestion presidio-analyzer presidio-anonymizer
 ```
+
+All of Step 3 is `make step3`.
 Starts the data catalog system (OpenMetadata, which tags sensitive data) and Presidio (which detects personal info like emails or account numbers) in the background.
 
 ---
@@ -155,6 +190,9 @@ Marks the newly-loaded tables in the data catalog as "contains sensitive data," 
 ```sh
 sh infra/scripts/compose.sh up -d litellm-redis litellm mlflow
 ```
+
+Step 4 up to the key provisioning is `make step4-keys`; the gate below is
+`make eval-gate`.
 
 Starts LiteLLM (the single gateway all AI calls go through) and MLflow (which tracks which prompt versions are good enough to use) in the background.
 
@@ -184,7 +222,7 @@ Runs a real grading test on two versions of the invoice-reading prompt — the g
 ### Step 5 — Policy (check the rulebook is valid)
 
 ```sh
-python3 infra/scripts/validate-cedar-policies.py
+python3 infra/scripts/validate-cedar-policies.py     # or: make validate-policies
 ```
 
 Checks that the real approval rulebook (Cedar policies) is written correctly and makes the right decisions — should print ACCEPTED with no errors.
@@ -194,7 +232,7 @@ Checks that the real approval rulebook (Cedar policies) is written correctly and
 ### Step 6 — Agent runtime + everything else
 
 ```sh
-sh infra/scripts/compose.sh up -d
+sh infra/scripts/compose.sh up -d                    # or: make step6
 ```
 
 Starts everything else at once — the AI agents, the ledger, the policy checker, the audit log, the kill switch, the web console, and the dashboards.
@@ -204,7 +242,7 @@ Starts everything else at once — the AI agents, the ledger, the policy checker
 
 
 ```sh
-docker build -t custodian-sandbox-ocr:latest custodian-sandbox-ocr/
+docker build -t custodian-sandbox-ocr:latest services/sandbox-ocr/   # or: make sandbox-image
 ```
 
 Builds the locked-down sandbox image used to safely read scanned invoice images — without this, uploading an invoice photo won't work..
@@ -214,7 +252,7 @@ Builds the locked-down sandbox image used to safely read scanned invoice images 
 ### Confirm everything is up
 
 ```sh
-sh infra/scripts/compose.sh ps --format "table {{.Name}}\t{{.Status}}"
+sh infra/scripts/compose.sh ps --format "table {{.Name}}\t{{.Status}}"   # or: make ps
 ```
 
 Lists every running container and its status, so you can check that everything shows healthy before moving on.
@@ -223,4 +261,24 @@ Lists every running container and its status, so you can check that everything s
 
 ### Opening all the UI Components
 
-**Refer to the CRDENTIALS.md for this**
+`make urls` prints every browser-facing URL.
+
+The matching logins are **not** shipped in this repo — they are whatever
+`make env` generated on your machine, so there is nothing to look up and
+nothing to leak. Every one of them is a value in your own `.env`:
+
+| Page | URL | Login comes from |
+|---|---|---|
+| Custodian Console | http://localhost:3000 | redirects to Keycloak; demo users `ap.clerk.demo` / `controller.demo` / `cfo.demo`, passwords in `DEMO_*_PASSWORD` |
+| Keycloak admin | http://localhost:8180/admin | `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` |
+| Infisical | http://localhost:8443 | `INFISICAL_ADMIN_EMAIL` / `INFISICAL_ADMIN_PASSWORD` |
+| MinIO console | http://localhost:9001 | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` |
+| LiteLLM UI | http://localhost:4000/ui | `LITELLM_MASTER_KEY` |
+| MLflow | http://localhost:5500 | none — deliberately unauthenticated, local only |
+| OpenMetadata | http://localhost:8585 | `admin@open-metadata.org` / `admin` — OpenMetadata's own default, not from `.env` |
+| Langfuse | http://localhost:3010 | `INFISICAL_ADMIN_EMAIL` address / `LANGFUSE_INIT_USER_PASSWORD` |
+| Prometheus | http://localhost:9095 | none |
+| Grafana | http://localhost:3020 | `admin` / `GRAFANA_ADMIN_PASSWORD` |
+
+If you want that table filled in with your machine's actual values, keep a
+local `CREDENTIALS.md` — it is gitignored for exactly that purpose.

@@ -7,7 +7,9 @@ networks:
 
 services:
   audit-log:
-    build: ../../custodian-audit-log
+    build:
+      context: ../..
+      dockerfile: services/audit-log/Dockerfile
     container_name: custodian-audit-log
     restart: unless-stopped
     environment:
@@ -34,7 +36,9 @@ services:
           memory: 256M
 
   control-plane:
-    build: ../../custodian-control-plane
+    build:
+      context: ../..
+      dockerfile: services/control-plane/Dockerfile
     container_name: custodian-control-plane
     restart: unless-stopped
     environment:
@@ -62,7 +66,9 @@ services:
           memory: 256M
 
   custodian-ledger:
-    build: ../../custodian-ledger
+    build:
+      context: ../..
+      dockerfile: services/ledger/Dockerfile
     container_name: custodian-ledger
     restart: unless-stopped
     environment:
@@ -92,7 +98,9 @@ services:
           memory: 512M
 
   policy-service:
-    build: ../policy-service
+    build:
+      context: ../..
+      dockerfile: services/policy-service/Dockerfile
     container_name: custodian-policy-service
     restart: unless-stopped
     environment:
@@ -126,12 +134,14 @@ services:
           memory: 384M
 
   # Infisical Agent Proxy's request-forwarding never worked on this
-  # self-hosted version (see custodian-backend/app/ledger_client.py) -
+  # self-hosted version (see services/backend/app/ledger_client.py) -
   # Payment-Execution instead fetches its ledger credential directly via
   # Infisical's Universal Auth, fresh before each call.
 
   custodian-backend:
-    build: ../../custodian-backend
+    build:
+      context: ../..
+      dockerfile: services/backend/Dockerfile
     container_name: custodian-backend
     restart: unless-stopped
     labels:
@@ -191,7 +201,9 @@ services:
           memory: 1024M
 
   sandbox-runner:
-    build: ../../custodian-sandbox-runner
+    build:
+      context: ../..
+      dockerfile: services/sandbox-runner/Dockerfile
     container_name: custodian-sandbox-runner
     restart: unless-stopped
     environment:
@@ -217,7 +229,7 @@ services:
           memory: 384M
 
   custodian-console:
-    build: ../../custodian-console
+    build: ../../apps/console
     container_name: custodian-console
     restart: unless-stopped
     environment:

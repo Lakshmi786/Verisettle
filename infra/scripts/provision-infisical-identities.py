@@ -105,7 +105,7 @@ def main():
         print(f"wrote {len(created)} new identity credentials to {out_path} (gitignored)")
 
     # custodian-payment-execution is the one identity actually consumed by
-    # name at runtime (custodian-backend/app/ledger_client.py) - print its
+    # name at runtime (services/backend/app/ledger_client.py) - print its
     # real values as ready-to-paste .env lines instead of leaving them
     # buried in the JSON dump above.
     payment_exec = next((c for c in created if c["service"] == "custodian-payment-execution"), None)
@@ -138,7 +138,7 @@ def main():
         "PGPASS_LANGFUSE": env["PGPASS_LANGFUSE"],
         "PGPASS_CUSTODIAN_LEDGER": env["PGPASS_CUSTODIAN_LEDGER"],
         "PGPASS_CUSTODIAN_BACKEND": env["PGPASS_CUSTODIAN_BACKEND"],
-        # The one secret custodian-backend/app/ledger_client.py actually
+        # The one secret services/backend/app/ledger_client.py actually
         # fetches from Infisical at runtime (Payment-Execution's Universal
         # Auth identity reads this fresh before every ledger call).
         "LEDGER_API_KEY": env["LEDGER_API_KEY"],

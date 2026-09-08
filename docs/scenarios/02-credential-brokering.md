@@ -62,7 +62,7 @@ curl -s "http://localhost:8443/api/v3/secrets/raw/LEDGER_API_KEY?workspaceId=$IN
 ```
 **What you'll see:** a real JSON response with `"secretKey":"LEDGER_API_KEY"`
 and a real `"secretValue"` — the exact same password
-`custodian-backend/app/ledger_client.py` fetches internally every time
+`services/backend/app/ledger_client.py` fetches internally every time
 Payment-Execution actually pays a vendor. You just retrieved it the same
 way the agent does: prove identity first, then ask, every time, nothing
 cached long-term.
