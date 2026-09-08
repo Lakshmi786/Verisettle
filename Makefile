@@ -23,7 +23,7 @@ CONSOLE_URL       := http://localhost:3000
 LITELLM_URL       := http://localhost:4000
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps logs restart clean bootstrap bootstrap-data bootstrap-finish \
+.PHONY: help up down ps logs restart clean env bootstrap bootstrap-data bootstrap-finish \
         step0 step1 step2 step3 step4-keys step5 step6 sandbox-image eval-gate \
         lock sync lint format typecheck test check validate-policies \
         health verify-audit kill-switch-status urls
@@ -59,6 +59,9 @@ clean: ## DESTRUCTIVE - stop the stack and delete every data volume
 # ----------------------------------------------------------------------
 # First run (README steps 0-6). Each step is independently re-runnable.
 # ----------------------------------------------------------------------
+env: ## Generate .env from .env.example with fresh local secrets (refuses to overwrite)
+	sh infra/scripts/generate-env.sh
+
 step0: ## Step 0 - create the Docker network and render the Keycloak realm
 	docker network create custodian-net 2>/dev/null || true
 	sh infra/scripts/render-keycloak-realm.sh

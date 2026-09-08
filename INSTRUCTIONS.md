@@ -148,8 +148,8 @@ Makefile                    the developer entry point - `make help` lists every 
 .dockerignore               keeps the repo-root build context small and secret-free
 INSTRUCTIONS.md              this file
 README.md                    section 8
-CREDENTIALS.md                a plain listing of every local-dev credential and where it lives (not secret - see ground rule 3)
-SECRETS GEN GUIDE.md          the exact openssl/python one-liners used to generate every random secret in .env.example
+CREDENTIALS.md                gitignored - optional local listing of THIS machine's generated credentials
+SECRETS GEN GUIDE.md          the exact openssl/python one-liners behind every placeholder in .env.example
 ```
 
 Split `infra/compose/` into **six files**, one per governance layer, each
@@ -550,6 +550,10 @@ Git Bash on Windows works identically to Linux/macOS) — the first-run
 sequence in the README (section 8) is built entirely out of calling these
 in order:
 
+- **`generate-env.sh`** — writes `.env` from the `.env.example` template,
+  substituting a fresh `openssl rand -hex n` value for every placeholder.
+  Refuses to overwrite an existing `.env` unless `FORCE=1`, because those
+  secrets are baked into already-initialised data volumes.
 - **`compose.sh`** — thin wrapper applying all six `-f` compose-file flags.
 - **`render-keycloak-realm.sh`** — fills a Keycloak realm template with real
   values from `.env` before Keycloak starts.
@@ -574,15 +578,26 @@ in order:
   sensitive in the OpenMetadata catalog.
 - **`validate-cedar-policies.py`** — the real policy validator from 5.4.
 
-`.env.example` must ship with a real, working random value already filled
-in for every **local-only** secret (this is a teaching/demo repo — reusing
-baked-in local values is fine, nothing here is reachable from outside the
-machine), with only two lines requiring a real value from the user
-(`OPENAI_API_KEY`, `GROQ_API_KEY`), and every field a bootstrap script fills
-in later marked with a clear `# [AUTO-FILLED] by <script>` comment and left
-blank. `SECRETS GEN GUIDE.md` documents the exact `openssl`/equivalent
-one-liner used to generate each baked-in value, so they're regenerable, not
-mysterious.
+`.env.example` is a **committed template containing no real values**. Every
+local-only secret is a `__RAND_HEX_n__` placeholder naming the exact
+`openssl rand -hex n` call that produces it; `generate-env.sh` substitutes
+each one with a fresh value to write `.env`. Only two lines need a real
+value from the user (`OPENAI_API_KEY`, `GROQ_API_KEY`), and every field a
+bootstrap script fills in later is marked with a clear
+`# [AUTO-FILLED] by <script>` comment and left blank.
+
+**This is a deliberate revision of the original instruction**, which called
+for `.env.example` to ship with real working values baked in on the grounds
+that nothing here is reachable from outside the machine. That reasoning
+holds for a repo that never leaves the machine — but this one is published,
+and committed credentials in public git history stay there permanently even
+after a later cleanup. Generating them on first run costs one command and
+gives every clone its own distinct secrets, which is strictly better than
+every clone sharing one set. `SECRETS GEN GUIDE.md` remains the
+documentation of what each call is and why each length was chosen; it is
+committed for the same reason (it contains commands, not values).
+`CREDENTIALS.md` — a listing of one machine's actual generated values — is
+gitignored.
 
 ---
 

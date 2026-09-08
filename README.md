@@ -54,10 +54,16 @@ or mocked model path.
   https://console.groq.com/keys.
 
 ```sh
-cp .env.example .env
+make env          # or: sh infra/scripts/generate-env.sh
 ```
-`.env.example` already has a real random value filled in for every
-local-only secret — open `.env` and change just these two lines:
+
+This writes `.env` from `.env.example`, generating a fresh, working random
+value for every local-only secret using the exact `openssl` calls documented
+in `SECRETS GEN GUIDE.md`. It refuses to overwrite an existing `.env`,
+because those secrets are baked into your Docker volumes once the stack has
+run — regenerating them would lock you out of your own database.
+
+Then open `.env` and change just these two lines:
 
 ```
 OPENAI_API_KEY=sk-...
@@ -255,4 +261,24 @@ Lists every running container and its status, so you can check that everything s
 
 ### Opening all the UI Components
 
-**Refer to the CRDENTIALS.md for this**
+`make urls` prints every browser-facing URL.
+
+The matching logins are **not** shipped in this repo — they are whatever
+`make env` generated on your machine, so there is nothing to look up and
+nothing to leak. Every one of them is a value in your own `.env`:
+
+| Page | URL | Login comes from |
+|---|---|---|
+| Custodian Console | http://localhost:3000 | redirects to Keycloak; demo users `ap.clerk.demo` / `controller.demo` / `cfo.demo`, passwords in `DEMO_*_PASSWORD` |
+| Keycloak admin | http://localhost:8180/admin | `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` |
+| Infisical | http://localhost:8443 | `INFISICAL_ADMIN_EMAIL` / `INFISICAL_ADMIN_PASSWORD` |
+| MinIO console | http://localhost:9001 | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` |
+| LiteLLM UI | http://localhost:4000/ui | `LITELLM_MASTER_KEY` |
+| MLflow | http://localhost:5500 | none — deliberately unauthenticated, local only |
+| OpenMetadata | http://localhost:8585 | `admin@open-metadata.org` / `admin` — OpenMetadata's own default, not from `.env` |
+| Langfuse | http://localhost:3010 | `INFISICAL_ADMIN_EMAIL` address / `LANGFUSE_INIT_USER_PASSWORD` |
+| Prometheus | http://localhost:9095 | none |
+| Grafana | http://localhost:3020 | `admin` / `GRAFANA_ADMIN_PASSWORD` |
+
+If you want that table filled in with your machine's actual values, keep a
+local `CREDENTIALS.md` — it is gitignored for exactly that purpose.
