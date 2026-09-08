@@ -1,0 +1,53 @@
+# LiteLLM Proxy config: the single gateway every agent calls through.
+# No agent code holds a provider SDK or a raw provider API key - only a
+# LiteLLM virtual key scoped to one of these three routes.
+model_list:
+  - model_name: custodian-reasoning
+    litellm_params:
+      model: openai/gpt-5.6-sol
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      id: custodian-reasoning
+      description: "Fraud/risk judgment and any payment decision above the routine-amount threshold."
+
+  - model_name: custodian-routine
+    litellm_params:
+      # Groq's real model id includes the "openai/" namespace prefix
+      # (verified directly against api.groq.com) - groq/openai/gpt-oss-120b
+      # is correct here despite some reports of a double-slash parsing bug.
+      model: groq/openai/gpt-oss-120b
+      api_key: os.environ/GROQ_API_KEY
+    model_info:
+      id: custodian-routine
+      description: "Routine invoice field extraction / OCR post-processing / low-risk triage."
+
+  - model_name: custodian-guardrail
+    litellm_params:
+      model: groq/openai/gpt-oss-safeguard-20b
+      api_key: os.environ/GROQ_API_KEY
+    model_info:
+      id: custodian-guardrail
+      description: "Content-safety / prompt-injection classifier on untrusted invoice content, policy-driven."
+
+router_settings:
+  routing_strategy: usage-based-routing-v2
+  # custodian-routine may fall back UP to the reasoning model if Groq
+  # degrades - costs more, never weakens judgment. custodian-reasoning has
+  # deliberately no fallback: a fraud/payment decision that can't reach the
+  # flagship model should fail loudly and escalate to a human, not silently
+  # get answered by a weaker model.
+  fallbacks:
+    - custodian-routine: ["custodian-reasoning"]
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  store_model_in_db: false
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+  json_logs: true
+  # Real cost/spend/latency metrics per model+key, scraped by Prometheus -
+  # this is LiteLLM's own built-in exporter, not a custom-built proxy metric.
+  callbacks: ["prometheus"]

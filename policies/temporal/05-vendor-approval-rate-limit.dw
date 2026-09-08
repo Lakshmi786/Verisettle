@@ -1,0 +1,26 @@
+// No more than 3 approvals to the same vendor within a rolling 24h window
+// without escalation (INSTRUCTIONS.md 5.4). Cedar alone only sees one
+// request at a time and can't count prior events, so this rate limit is
+// expressed in Dogwood, which extends Cedar with exactly this kind of
+// event-history reasoning.
+//
+// Grammar verified directly against dogwood-policy/dogwood's own test
+// corpus (dogwood-language/tests/passing/temporal_only/corpus/
+// 0059_count_threshold/policy_1.dw) rather than guessed - `when temporal`,
+// `formerly within <window> <Action>::request{...}` and
+// `exists (n: Long). ((count for (t: Timepoint). where (...)) == n && n > k)`
+// are all patterns taken from that real, passing example.
+forbid (
+    principal is Custodian::Agent,
+    action == Custodian::Action::"ApprovePayment",
+    resource is Custodian::Payment
+)
+when temporal {
+    formerly within 24h Custodian::Action::"ApprovePayment"::request{ input.vendor: context.input.vendor }
+    && exists (n: Long). (
+        (count for (t: Timepoint).
+            where (Custodian::Action::"ApprovePayment"::response{ input.vendor: context.input.vendor } && tp(t))
+        ) == n
+        && n >= 3
+    )
+};

@@ -1,0 +1,8 @@
+{
+  "agent": "payment-execution",
+  "trustTier": "write-ledger",
+  "allowedActions": ["CreateLedgerEntry", "FlagForReview"],
+  "allowedTools": ["create-ledger-entry", "flag-for-review"],
+  "deniedActions": ["ApprovePayment", "UpdateVendorRecord"],
+  "notes": "The ONLY agent whose capability manifest includes CreateLedgerEntry/create-ledger-entry. This is the independent second check alongside the Cedar policy - a single Cedar misconfiguration must never alone grant a lower-tier agent write access to the ledger."
+}

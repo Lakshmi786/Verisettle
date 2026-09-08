@@ -1,0 +1,7 @@
+{
+  "agent": "approval",
+  "trustTier": "read-and-flag",
+  "allowedActions": ["ApprovePayment", "FlagForReview", "RequestAdditionalDocumentation", "UpdateVendorRecord"],
+  "allowedTools": ["flag-for-review", "request-additional-documentation", "update-vendor-record"],
+  "deniedActions": ["CreateLedgerEntry"]
+}

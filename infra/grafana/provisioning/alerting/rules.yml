@@ -1,0 +1,73 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: custodian-governance
+    folder: Custodian
+    interval: 30s
+    rules:
+      - uid: repeated-policy-denials
+        title: Repeated policy denials from one agent
+        condition: C
+        # Same threshold as control-plane's own automatic pause trigger
+        # (DENIAL_THRESHOLD=3 over DENIAL_WINDOW_MINUTES=5).
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: custodian-prometheus
+            model:
+              editorMode: code
+              expr: sum(increase(policy_decisions_total{decision="Deny"}[5m])) by (principal_id)
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [3] }
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        labels:
+          severity: warning
+          signal: repeated-policy-denial
+        annotations:
+          summary: "Agent {{ $labels.principal_id }} has more than 3 policy denials in the last 5 minutes"
+          description: "Mirrors control-plane's automatic agent-pause trigger - this agent would already be paused by the kill-switch watchdog."
+
+      - uid: llm-cost-anomaly
+        title: LLM spend rate anomaly
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: custodian-prometheus
+            model:
+              editorMode: code
+              expr: sum(increase(litellm_spend_metric_total[5m]))
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              # A real call costs fractions of a cent; $1/5min is an
+              # order-of-magnitude anomaly for this workload.
+              conditions:
+                - evaluator: { type: gt, params: [1.0] }
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        labels:
+          severity: critical
+          signal: cost-anomaly
+        annotations:
+          summary: "LLM spend exceeded $1.00 in a 5-minute window"
+          description: "Real per-call spend in this stack is fractions of a cent - this indicates a runaway loop, a stuck retry, or a compromised agent."

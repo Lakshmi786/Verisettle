@@ -1,0 +1,105 @@
+{
+  "realm": "custodian",
+  "enabled": true,
+  "displayName": "Custodian Finance Ops",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "roles": {
+    "realm": [
+      {
+        "name": "ap-clerk",
+        "description": "Accounts-payable clerk. Approval-authority tier 1: can acknowledge/escalate, cannot approve payment."
+      },
+      {
+        "name": "controller",
+        "description": "Finance controller. Approval-authority tier 2: can approve routine-amount payments up to the controller threshold."
+      },
+      {
+        "name": "cfo-approver",
+        "description": "CFO-level approver. Approval-authority tier 3: required for high-value overrides and first-seen-vendor dual approval."
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "custodian-backend",
+      "name": "Custodian Backend (FastAPI)",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [],
+      "secret": "__CUSTODIAN_BACKEND_CLIENT_SECRET__"
+    },
+    {
+      "clientId": "custodian-console",
+      "name": "Custodian Console (Next.js)",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "secret": "__CUSTODIAN_CONSOLE_CLIENT_SECRET__",
+      "protocolMappers": [
+        {
+          "name": "realm-roles-to-id-token",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ap.clerk.demo",
+      "enabled": true,
+      "email": "ap.clerk.demo@custodian.local",
+      "emailVerified": true,
+      "firstName": "Ana",
+      "lastName": "Reyes",
+      "credentials": [{ "type": "password", "value": "__AP_CLERK_PASSWORD__", "temporary": false }],
+      "realmRoles": ["ap-clerk"],
+      "attributes": { "approval_authority_tier": ["1"] }
+    },
+    {
+      "username": "controller.demo",
+      "enabled": true,
+      "email": "controller.demo@custodian.local",
+      "emailVerified": true,
+      "firstName": "Priya",
+      "lastName": "Natarajan",
+      "credentials": [{ "type": "password", "value": "__CONTROLLER_PASSWORD__", "temporary": false }],
+      "realmRoles": ["controller"],
+      "attributes": { "approval_authority_tier": ["2"] }
+    },
+    {
+      "username": "cfo.demo",
+      "enabled": true,
+      "email": "cfo.demo@custodian.local",
+      "emailVerified": true,
+      "firstName": "Marcus",
+      "lastName": "Chen",
+      "credentials": [{ "type": "password", "value": "__CFO_PASSWORD__", "temporary": false }],
+      "realmRoles": ["cfo-approver"],
+      "attributes": { "approval_authority_tier": ["3"] }
+    }
+  ]
+}

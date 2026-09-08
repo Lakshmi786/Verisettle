@@ -1,0 +1,97 @@
+{
+  "uid": "custodian-governance",
+  "title": "Custodian Governance Overview",
+  "tags": ["custodian"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Policy decisions/sec by outcome",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(policy_decisions_total[1m])) by (decision)",
+          "legendFormat": "{{decision}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Policy denials/sec by agent",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(policy_decisions_total{decision=\"Deny\"}[5m])) by (principal_id)",
+          "legendFormat": "{{principal_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "LLM spend/sec by agent (LiteLLM virtual key)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "sum(rate(litellm_spend_metric_total[5m])) by (api_key_alias)",
+          "legendFormat": "{{api_key_alias}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "LLM request latency p95 by model",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(litellm_llm_api_latency_metric_bucket[5m])) by (le, model))",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Total policy denials (24h)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(increase(policy_decisions_total{decision=\"Deny\"}[24h]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Total LLM spend (24h, USD)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "custodian-prometheus" },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 16 },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "targets": [
+        {
+          "expr": "sum(increase(litellm_spend_metric_total[24h]))",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "agent": "extraction",
+  "trustTier": "read-only",
+  "allowedActions": ["RequestAdditionalDocumentation"],
+  "allowedTools": ["request-additional-documentation"],
+  "deniedActions": ["ApprovePayment", "CreateLedgerEntry", "UpdateVendorRecord", "FlagForReview"]
+}

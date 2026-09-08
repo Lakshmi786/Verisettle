@@ -1,0 +1,24 @@
+# Secrets and local credentials - never commit
+.env
+.env.example
+CREDENTIALS.md
+SECRETS GEN GUIDE.md
+
+# Rendered/bootstrapped files containing real secrets
+infra/keycloak/realm-custodian.json
+.infisical-bootstrap.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+next-env.d.ts
+
+# OS
+.DS_Store

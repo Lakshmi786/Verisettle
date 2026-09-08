@@ -1,0 +1,4 @@
+Look at this receipt text and tell me about the purchase - who sold it, when,
+where, and how much it cost. Make your best guess if something's unclear.
+
+{ocr_text}

@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alerting is done in Grafana's unified alerting rather than Prometheus's
+# own rule_files + Alertmanager - one fewer container for this stack.
+scrape_configs:
+  - job_name: policy-service
+    static_configs:
+      - targets: ["policy-service:8000"]
+
+  - job_name: litellm
+    authorization:
+      credentials_file: /run/secrets/litellm_master_key
+    static_configs:
+      - targets: ["litellm:4000"]

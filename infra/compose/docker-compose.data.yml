@@ -1,0 +1,269 @@
+name: custodian
+
+networks:
+  custodian-net:
+    external: true
+    name: custodian-net
+
+volumes:
+  om-postgres-data:
+  om-es-data:
+  om-ingestion-dag-airflow:
+  om-ingestion-dags:
+  om-ingestion-tmp:
+  invoice-images:
+
+services:
+  om-postgres:
+    image: docker.getcollate.io/openmetadata/postgresql:1.13.3
+    container_name: custodian-om-postgres
+    restart: unless-stopped
+    command: "--work_mem=10MB"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${OM_POSTGRES_ROOT_PASSWORD}
+    volumes:
+      - om-postgres-data:/var/lib/postgresql/data
+    networks:
+      - custodian-net
+    healthcheck:
+      test: psql -U postgres -tAc 'select 1' -d openmetadata_db
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  om-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
+    container_name: custodian-om-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms768m -Xmx768m
+      - xpack.security.enabled=false
+    volumes:
+      - om-es-data:/usr/share/elasticsearch/data
+    networks:
+      - custodian-net
+    healthcheck:
+      test: "curl -s http://localhost:9200/_cluster/health?pretty | grep status | grep -qE 'green|yellow' || exit 1"
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1280M
+
+  om-migrate:
+    image: docker.getcollate.io/openmetadata/server:1.13.3
+    container_name: custodian-om-migrate
+    command: "./bootstrap/openmetadata-ops.sh migrate"
+    environment: &om-server-env
+      OPENMETADATA_CLUSTER_NAME: openmetadata
+      SERVER_PORT: 8585
+      SERVER_ADMIN_PORT: 8586
+      LOG_LEVEL: INFO
+      AUTHORIZER_CLASS_NAME: org.openmetadata.service.security.DefaultAuthorizer
+      AUTHORIZER_REQUEST_FILTER: org.openmetadata.service.security.JwtFilter
+      AUTHORIZER_ADMIN_PRINCIPALS: "[admin]"
+      AUTHORIZER_ALLOWED_REGISTRATION_DOMAIN: '["all"]'
+      AUTHORIZER_INGESTION_PRINCIPALS: "[ingestion-bot]"
+      AUTHORIZER_PRINCIPAL_DOMAIN: "open-metadata.org"
+      AUTHENTICATION_PROVIDER: basic
+      AUTHENTICATION_RESPONSE_TYPE: id_token
+      AUTHENTICATION_PUBLIC_KEYS: "[http://localhost:8585/api/v1/system/config/jwks]"
+      AUTHENTICATION_JWT_PRINCIPAL_CLAIMS: "[email,preferred_username,sub]"
+      AUTHENTICATION_ENABLE_SELF_SIGNUP: "false"
+      AUTHENTICATION_CLIENT_TYPE: public
+      RSA_PUBLIC_KEY_FILE_PATH: "./conf/public_key.der"
+      RSA_PRIVATE_KEY_FILE_PATH: "./conf/private_key.der"
+      JWT_ISSUER: "open-metadata.org"
+      JWT_KEY_ID: "Gb389a-9f76-gdjs-a92j-0242bk94356"
+      PIPELINE_SERVICE_CLIENT_ENDPOINT: http://custodian-om-ingestion:8080
+      SERVER_HOST_API_URL: http://custodian-om-server:8585/api
+      PIPELINE_SERVICE_CLIENT_VERIFY_SSL: "no-ssl"
+      DB_DRIVER_CLASS: org.postgresql.Driver
+      DB_SCHEME: postgresql
+      DB_PARAMS: "allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      DB_USER: openmetadata_user
+      # Baked into the vendored OpenMetadata postgres image's initdb scripts -
+      # not parameterizable, unlike the superuser password.
+      DB_USER_PASSWORD: openmetadata_password
+      DB_HOST: om-postgres
+      DB_PORT: 5432
+      OM_DATABASE: openmetadata_db
+      ELASTICSEARCH_HOST: om-elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_SCHEME: http
+      SEARCH_TYPE: elasticsearch
+      EVENT_MONITOR: prometheus
+      PIPELINE_SERVICE_CLIENT_ENABLED: "true"
+      PIPELINE_SERVICE_CLIENT_CLASS_NAME: org.openmetadata.service.clients.pipeline.airflow.AirflowRESTClient
+      PIPELINE_SERVICE_CLIENT_SECRETS_MANAGER_LOADER: "noop"
+      AIRFLOW_USERNAME: admin
+      AIRFLOW_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+      FERNET_KEY: jJ/9sz0g0OHxsfxOoSfdFdmk3ysNmPRnH3TUAbz3IHA=
+      SECRET_MANAGER: db
+      OPENMETADATA_HEAP_OPTS: "-Xmx768m -Xms768m"
+    depends_on:
+      om-elasticsearch:
+        condition: service_healthy
+      om-postgres:
+        condition: service_healthy
+    networks:
+      - custodian-net
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+
+  om-server:
+    image: docker.getcollate.io/openmetadata/server:1.13.3
+    container_name: custodian-om-server
+    restart: unless-stopped
+    environment: *om-server-env
+    ports:
+      - "127.0.0.1:8585:8585"
+      - "127.0.0.1:8586:8586"
+    depends_on:
+      om-elasticsearch:
+        condition: service_healthy
+      om-postgres:
+        condition: service_healthy
+      om-migrate:
+        condition: service_completed_successfully
+    networks:
+      - custodian-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8586/healthcheck"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1024M
+
+  om-ingestion:
+    image: docker.getcollate.io/openmetadata/ingestion:1.13.3
+    container_name: custodian-om-ingestion
+    restart: unless-stopped
+    entrypoint: /bin/bash
+    command: ["/opt/airflow/ingestion_dependency.sh"]
+    environment:
+      AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dag_generated_configs"
+      DB_HOST: om-postgres
+      DB_PORT: 5432
+      AIRFLOW_DB: airflow_db
+      DB_USER: airflow_user
+      DB_SCHEME: postgresql+psycopg2
+      # Same constraint as DB_USER_PASSWORD above - baked into the vendored image.
+      DB_PASSWORD: airflow_pass
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+    depends_on:
+      om-elasticsearch:
+        condition: service_started
+      om-postgres:
+        condition: service_healthy
+      om-server:
+        condition: service_started
+    ports:
+      # Host side only - internal traffic (om-server's PIPELINE_SERVICE_CLIENT_ENDPOINT
+      # above) always uses the container port 8080 over custodian-net, unaffected by
+      # this mapping. 8080 itself is one of the most commonly-already-bound ports on
+      # any dev machine (other tooling, other projects, IDE proxies); a real fresh
+      # install hit exactly that conflict, so this uses a less contested host port.
+      - "127.0.0.1:8087:8080"
+    networks:
+      - custodian-net
+    volumes:
+      - om-ingestion-dag-airflow:/opt/airflow/dag_generated_configs
+      - om-ingestion-dags:/opt/airflow/dags
+      - om-ingestion-tmp:/tmp
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1536M
+
+  presidio-analyzer:
+    image: ghcr.io/data-privacy-stack/presidio-analyzer:latest
+    container_name: custodian-presidio-analyzer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5002:3000"
+    networks:
+      - custodian-net
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:3000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+
+  presidio-anonymizer:
+    image: ghcr.io/data-privacy-stack/presidio-anonymizer:latest
+    container_name: custodian-presidio-anonymizer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5001:3000"
+    networks:
+      - custodian-net
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:3000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  data-loader:
+    build: ../../custodian-data-loader
+    container_name: custodian-data-loader
+    restart: "no"
+    # One-shot job (Step 3), not part of the stack - excluded from a bare
+    # `compose.sh up -d` (Step 6) so it isn't silently re-run; still starts
+    # fine via `compose.sh up data-loader` since explicitly naming a service
+    # overrides its profile.
+    profiles: ["jobs"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      PGPASS_CUSTODIAN_BACKEND: ${PGPASS_CUSTODIAN_BACKEND}
+      PGPASS_CUSTODIAN_LEDGER: ${PGPASS_CUSTODIAN_LEDGER}
+      USASPENDING_AGENCY: ${USASPENDING_AGENCY}
+      USASPENDING_FISCAL_YEAR: ${USASPENDING_FISCAL_YEAR}
+      INVOICE_IMAGE_DIR: /data/invoices
+    volumes:
+      - invoice-images:/data/invoices
+    networks:
+      - custodian-net
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          # datasets/pillow streaming + GE's import graph run past 1GB decoding receipt images.
+          memory: 3072M

@@ -1,0 +1,7 @@
+{
+  "agent": "risk-scoring",
+  "trustTier": "read-and-flag",
+  "allowedActions": ["FlagForReview", "RequestAdditionalDocumentation"],
+  "allowedTools": ["flag-for-review", "request-additional-documentation"],
+  "deniedActions": ["ApprovePayment", "CreateLedgerEntry", "UpdateVendorRecord"]
+}

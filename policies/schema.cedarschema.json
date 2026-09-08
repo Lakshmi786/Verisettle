@@ -1,0 +1,79 @@
+{
+  "Custodian": {
+    "entityTypes": {
+      "Agent": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "trustTier": { "type": "String" }
+          }
+        }
+      },
+      "User": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "approvalAuthorityTier": { "type": "Long" }
+          }
+        }
+      },
+      "Payment": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "amount": { "type": "Long" },
+            "vendorFirstSeen": { "type": "Boolean" },
+            "vendor": { "type": "String" },
+            "approvalCount": { "type": "Long" }
+          }
+        }
+      },
+      "Tool": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "name": { "type": "String" }
+          }
+        }
+      }
+    },
+    "actions": {
+      "ApprovePayment": {
+        "appliesTo": {
+          "principalTypes": ["Agent", "User"],
+          "resourceTypes": ["Payment"]
+        }
+      },
+      "CreateLedgerEntry": {
+        "appliesTo": {
+          "principalTypes": ["Agent"],
+          "resourceTypes": ["Payment"]
+        }
+      },
+      "FlagForReview": {
+        "appliesTo": {
+          "principalTypes": ["Agent"],
+          "resourceTypes": ["Payment"]
+        }
+      },
+      "RequestAdditionalDocumentation": {
+        "appliesTo": {
+          "principalTypes": ["Agent"],
+          "resourceTypes": ["Payment"]
+        }
+      },
+      "UpdateVendorRecord": {
+        "appliesTo": {
+          "principalTypes": ["Agent"],
+          "resourceTypes": ["Payment"]
+        }
+      },
+      "InvokeTool": {
+        "appliesTo": {
+          "principalTypes": ["Agent"],
+          "resourceTypes": ["Tool"]
+        }
+      }
+    }
+  }
+}
