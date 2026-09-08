@@ -138,7 +138,10 @@ typecheck: ## mypy across every Python service
 	$(UV) run mypy services infra
 
 test: ## pytest across every Python service
-	$(UV) run pytest
+# Exit code 5 is pytest's "no tests collected". The repo ships no unit
+# tests yet - its real verification is docs/scenarios run against a live
+# stack - so an empty run is not a failure. Any other code still fails.
+	@$(UV) run pytest; status=$$?; [ $$status -eq 0 ] || [ $$status -eq 5 ] || exit $$status
 
 check: lint typecheck test ## Lint, typecheck and test in one go
 
