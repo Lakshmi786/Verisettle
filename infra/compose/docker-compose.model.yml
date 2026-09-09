@@ -60,7 +60,11 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 768M
+          # 768M was not enough: the litellm-database image runs a Prisma
+          # migration (Node) alongside the Python proxy at startup, and the
+          # container was SIGKILLed (exit 137) before writing a single log
+          # line - Python block-buffers stdout, so the kill discarded it.
+          memory: 2048M
 
   mlflow:
     build: ../mlflow
