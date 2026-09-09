@@ -1,0 +1,4 @@
+The console ships no static assets, but Next.js's standalone Dockerfile
+copies apps/console/public into the runner stage. Git does not track empty
+directories, so without this placeholder the image build fails at
+`COPY --from=builder /app/public ./public` with "/app/public: not found".
