@@ -8,7 +8,7 @@
 # script that emits the file removes both problems.
 #
 # Every __RAND_HEX_n__ below is replaced with a fresh `openssl rand -hex n`.
-# The widths are not arbitrary - see "SECRETS GEN GUIDE.md" for why each
+# The widths are not arbitrary - see docs/secrets-reference.md for why each
 # value is 8, 12, 16 or 32 bytes.
 #
 # Refuses to overwrite an existing .env: once the stack has run, those

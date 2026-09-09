@@ -149,7 +149,7 @@ Makefile                    the developer entry point - `make help` lists every 
 INSTRUCTIONS.md              this file
 README.md                    section 8
 CREDENTIALS.md                gitignored - optional local listing of THIS machine's generated credentials
-SECRETS GEN GUIDE.md          the exact openssl/python one-liners behind every generated secret
+docs/secrets-reference.md     the exact openssl/python one-liners behind every generated secret
 ```
 
 Split `infra/compose/` into **six files**, one per governance layer, each
@@ -594,7 +594,7 @@ a committed env file — even a placeholder one — is the single most common
 way real credentials reach a public repo by accident, because the moment a
 value is pasted in for convenience it is already tracked. Generating on
 first run costs one command, gives every clone its own distinct secrets,
-and removes the template-drift problem entirely. `SECRETS GEN GUIDE.md`
+and removes the template-drift problem entirely. `docs/secrets-reference.md`
 remains the documentation of what each call is and why each length was
 chosen; it is committed because it contains commands, not values.
 `CREDENTIALS.md` — a listing of one machine's actual generated values — is

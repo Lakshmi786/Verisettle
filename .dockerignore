@@ -6,7 +6,6 @@
 .gitignore
 .env
 CREDENTIALS.md
-SECRETS GEN GUIDE.md
 .infisical-bootstrap.json
 infra/keycloak/realm-verisettle.json
 

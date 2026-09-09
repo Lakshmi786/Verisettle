@@ -21,10 +21,12 @@ AUDIT_URL         := http://localhost:8094
 CONTROL_PLANE_URL := http://localhost:8095
 CONSOLE_URL       := http://localhost:3000
 LITELLM_URL       := http://localhost:4000
+# Must match services/policy-service/pyproject.toml.
+CEDARPY_VERSION   := 4.8.7
 
 .DEFAULT_GOAL := help
 .PHONY: help up down ps logs restart clean env bootstrap bootstrap-data bootstrap-finish \
-        step0 step1 step2 step3 step4-keys step5 step6 sandbox-image eval-gate \
+        step0 step1 step2 step3 step4-keys step5 step6 step6-full sandbox-image eval-gate \
         lock sync lint format typecheck test check validate-policies \
         health verify-audit kill-switch-status urls
 
@@ -86,8 +88,22 @@ step3: ## Step 3 - data: OpenMetadata, Presidio, real dataset load, catalog tags
 
 step4-keys: ## Step 4a - LiteLLM + MLflow, then mint per-agent keys (prints values for .env)
 	$(COMPOSE) up -d litellm-redis litellm mlflow
-	@echo "waiting for the LiteLLM gateway to finish migrating..."
-	@until curl -sf $(LITELLM_URL)/health/liveliness >/dev/null 2>&1; do sleep 3; done
+	@echo "waiting for the LiteLLM gateway to finish migrating (up to 6 minutes)..."
+	@i=0; until curl -sf $(LITELLM_URL)/health/liveliness >/dev/null 2>&1; do \
+	    i=$$((i+1)); \
+	    if [ $$i -gt 120 ]; then \
+	        echo ""; \
+	        echo "LiteLLM never became live. It is almost certainly restart-looping."; \
+	        echo "Do NOT read .State.ExitCode or .State.OOMKilled while it is running -"; \
+	        echo "they report the current state and are meaningless mid-restart. Run:"; \
+	        echo "  docker inspect verisettle-litellm --format '{{.RestartCount}}'"; \
+	        echo "  sh infra/scripts/compose.sh run --rm litellm; echo \"exit=$$?\""; \
+	        echo "exit=137 means it was SIGKILLed - raise litellm's memory limit in"; \
+	        echo "infra/compose/docker-compose.model.yml, or free VM memory."; \
+	        exit 1; \
+	    fi; \
+	    sleep 3; \
+	done
 	python3 infra/scripts/provision-litellm-keys.py
 
 eval-gate: ## Step 4b - run the real DeepEval promotion gate (makes paid LLM calls)
@@ -95,7 +111,19 @@ eval-gate: ## Step 4b - run the real DeepEval promotion gate (makes paid LLM cal
 
 step5: validate-policies ## Step 5 - validate the Cedar rulebook
 
-step6: ## Step 6 - bring up the agent runtime and everything else
+# The application layer plus the two dashboards. Named explicitly rather than
+# a bare `up -d`, which would also start OpenMetadata (5 containers), Presidio
+# (2) and Langfuse (4) - together about 15 GB of declared limits that most
+# machines running this cannot supply, and that the governance path does not
+# need. `make step6-full` is the everything version.
+APP_SERVICES  := policy-service control-plane audit-log verisettle-ledger \
+                 verisettle-backend sandbox-runner verisettle-console
+DASHBOARDS    := prometheus grafana
+
+step6: ## Step 6 - agent runtime, ledger, PDP, audit log, kill switch, console, dashboards
+	$(COMPOSE) up -d $(APP_SERVICES) $(DASHBOARDS)
+
+step6-full: ## Step 6, everything - adds Langfuse tracing; needs ~20GB allocated to Docker
 	$(COMPOSE) up -d
 
 sandbox-image: ## Build the locked-down per-invocation OCR sandbox image
@@ -150,7 +178,17 @@ test: ## pytest across every Python service
 check: lint typecheck test ## Lint, typecheck and test in one go
 
 validate-policies: ## Run the real Cedar policy validator (expects ACCEPTED)
-	python3 infra/scripts/validate-cedar-policies.py
+	@# cedarpy is a policy-service dependency, not a host one, and macOS ships
+	@# Python 3.9 which has no wheel for it. Use the host interpreter when it
+	@# can import cedarpy, otherwise run the validator in a container so this
+	@# target works on a machine with nothing installed but Docker.
+	@if python3 -c "import cedarpy" >/dev/null 2>&1; then \
+	    python3 infra/scripts/validate-cedar-policies.py; \
+	else \
+	    echo "cedarpy not available to this python3 - running the validator in a container"; \
+	    docker run --rm -v "$(CURDIR):/w" -w /w python:3.12-slim \
+	        sh -c "pip install -q cedarpy==$(CEDARPY_VERSION) && python infra/scripts/validate-cedar-policies.py"; \
+	fi
 
 # ----------------------------------------------------------------------
 # Verification helpers - the checks the scenario docs run by hand
