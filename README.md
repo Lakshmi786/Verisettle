@@ -175,6 +175,7 @@ Makefile                        developer entry point - make help
 | Docker Desktop, **20GB RAM allocated** | Steady state is ~9-10GB, but Keycloak, SPIRE, Infisical, OpenMetadata, Langfuse and the runtime all run together. Windows: set `memory=20GB` in `%UserProfile%\.wslconfig`, then `wsl --shutdown`. |
 | ~25GB disk, 6+ CPU cores | Image size and build headroom |
 | `make`, and a POSIX shell | Ships with macOS/Linux; Git Bash on Windows |
+| The `infisical` CLI on `PATH` | `infra/scripts/bootstrap-infisical.sh` (step 2) drives it directly - `brew install infisical/get-cli/infisical` |
 | An OpenAI key and a Groq key | No offline or mocked model path exists |
 | `uv` (optional) | Only for working on the Python code locally |
 

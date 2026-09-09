@@ -13,6 +13,22 @@ SOCK=/run/spire/data/api.sock
 TD=verisettle.local
 PARENT="spiffe://${TD}/agent/docker-agent"
 
+# `docker compose up -d` returns as soon as the container is *started*, not
+# when spire-server has opened its registration API socket. Without this
+# wait every `entry create` below fails on a cold start - and because they
+# are guarded with `|| true`, they fail silently, leaving a stack with no
+# SPIFFE entries and no error to explain it.
+echo "waiting for ${CONTAINER} to become healthy..."
+i=0
+until MSYS_NO_PATHCONV=1 docker exec "$CONTAINER" "$BIN" healthcheck -socketPath "$SOCK" >/dev/null 2>&1; do
+  i=$((i + 1))
+  if [ "$i" -ge 60 ]; then
+    echo "spire-server did not become healthy within 120s (docker logs ${CONTAINER})" >&2
+    exit 1
+  fi
+  sleep 2
+done
+
 register() {
   spiffe_id="$1"
   selector="$2"

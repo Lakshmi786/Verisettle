@@ -10,6 +10,13 @@ CREDENTIALS.md
 # Rendered/bootstrapped files containing real secrets
 infra/keycloak/realm-verisettle.json
 .infisical-bootstrap.json
+# Written by provision-infisical-identities.py: holds the clientSecret of
+# every per-service machine identity. The script already calls it gitignored;
+# it was not, and this repo is public.
+.infisical-identities.json
+
+# Locally vendored tooling (e.g. a pinned `infisical` CLI binary), not source.
+/bin/
 
 # Python
 __pycache__/

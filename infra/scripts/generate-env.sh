@@ -104,7 +104,7 @@ PAYMENT_EXECUTION_CLIENT_SECRET=
 # ----------------------------------------------------------------------
 OM_POSTGRES_ROOT_PASSWORD=__RAND_HEX_16__
 AIRFLOW_ADMIN_PASSWORD=__RAND_HEX_12__
-USASPENDING_AGENCY=Department of Health and Human Services
+USASPENDING_AGENCY="Department of Health and Human Services"
 USASPENDING_FISCAL_YEAR=2024
 
 # ----------------------------------------------------------------------

@@ -68,6 +68,7 @@ step0: ## Step 0 - create the Docker network and render the Keycloak realm
 
 step1: ## Step 1 - foundations: Postgres + MinIO
 	$(COMPOSE) up -d postgres minio
+	sh infra/scripts/verify-service-databases.sh
 
 step2: ## Step 2 - identity: Keycloak, SPIRE, Infisical (prints values for .env)
 	$(COMPOSE) up -d keycloak spire-server infisical-redis infisical

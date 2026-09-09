@@ -20,6 +20,12 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-sed -i "s/^SPIRE_AGENT_JOIN_TOKEN=.*/SPIRE_AGENT_JOIN_TOKEN=${TOKEN}/" .env
+# Portable in-place edit: BSD sed (macOS) reads `-i` as "backup suffix" and
+# would consume the expression as one. Rewriting through a temp file and
+# `cat >` back keeps .env's inode and its 0600 mode on GNU and BSD alike.
+TMP_ENV=$(mktemp)
+sed "s/^SPIRE_AGENT_JOIN_TOKEN=.*/SPIRE_AGENT_JOIN_TOKEN=${TOKEN}/" .env > "$TMP_ENV"
+cat "$TMP_ENV" > .env
+rm -f "$TMP_ENV"
 echo "new join token written to .env: ${TOKEN}"
 echo "now run: sh infra/scripts/compose.sh up -d --force-recreate spire-agent"
